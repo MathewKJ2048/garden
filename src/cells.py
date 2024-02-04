@@ -10,6 +10,8 @@ class Cell:
         self.skin = skin
         self.grade = 0
 
+
+
 BLANK_CELL = Cell(BLANK,0)
 WATER_CELL = Cell(WATER,0)
 FIRE_CORE_CELL = Cell(FIRE,0)
@@ -23,13 +25,30 @@ for i in range(m):
 
 active_locations = set()
 
+def set_t(key):
+    nums = key.split()
+    return (int(nums[0]),int(nums[1]))
+def set_key(t):
+    i,j = t
+    return str(i)+" "+str(j)
+def get_modify(t,table): 
+    key = set_key(t)
+    if key in table:
+        return table[key]
+    return None
+def get_predict(t,table):
+    p = get_modify(t,table)
+    if p == None:
+        return get_cell(t)
+    return p
+def set_modify(t,table,cell):
+    key = set_key(t)
+    table[key] = cell
 
 def init():
     global m
     global n
     global matrix
-    
-    
     for i in range(m):
         for j in range(n):
             matrix[i][j] = Cell(BLANK,0)
@@ -59,13 +78,12 @@ def set_blank(i,j):
     set_cell((i,j),BLANK_CELL)
 
 def evolve():
-    rand_water = cointoss()
-    next_water = set()
-    to_modify = set()
+    rand_water = cointoss() # decide which direction water moves this time
+    m = {} # table to store all changes amde in this evolution
     print(len(active_locations))
     for t in active_locations:
         i, j = t
-
+        cell = get_cell(t)
         down = (i+1,j)
         down_left = (i+1,j-1)
         down_right = (i+1,j+1)
@@ -74,93 +92,86 @@ def evolve():
         up = (i-1,j)
         up_right = (i-1,j+1)
         up_left = (i-1,j+1)
+        def blank(t):
+            return get_predict(t,m).logic == BLANK
+        def delete():
+            set_modify(t,m,BLANK_CELL)
+        def move(t):
+            set_modify(t,m,cell)
 
-        blank_down = get_cell(down).logic == BLANK
-        blank_down_right = get_cell(down_right).logic == BLANK
-        blank_down_left = get_cell(down_left).logic == BLANK
-        blank_left = get_cell(left).logic == BLANK
-        blank_right = get_cell(right).logic == BLANK
-        blank_up = get_cell(up).logic == BLANK
-        blank_up_right = get_cell(up_right) == BLANK
-        blank_up_left = get_cell(up_left) == BLANK
-
-        cell = get_cell(t)
+        
+        
         if cell.logic == SAND:
-            if blank_down or blank_down_right or blank_down_left:
-                to_modify.add((t,BLANK_CELL))
-            if blank_down:
-                to_modify.add((down,cell))
-            elif blank_down_left and blank_down_right:
-                if random.random() > 0.5:
-                    to_modify.add((down_left,cell))
+            if blank(down) or blank(down_right) or blank(down_left):
+                delete()
+            if blank(down):
+                move(down)
+            elif blank(down_left) and blank(down_right):
+                if cointoss():
+                    move(down_left)
                 else:
-                    to_modify.add((down_right,cell))
-            elif blank_down_left:
-                to_modify.add((down_left,cell))
-            elif blank_down_right:
-                to_modify.add((down_right,cell))
+                    move(down_right)
+            elif blank(down_left):
+                move(down_left)
+            elif blank(down_right):
+                move(down_right)
+        
         elif cell.logic == WATER:
             positions = []
-            if blank_down and not down in next_water:
+            if blank(down):
                 positions.append(down)
-            if blank_down_left and not down_left in next_water:
+            if blank(down_left):
                 positions.append(down_left)
-            if blank_down_right and not down_right in next_water:
+            if blank(down_right):
                 positions.append(down_right)
             if len(positions) != 0:
-                pos = random.choice(positions)
-                to_modify.add((pos,cell))
-                next_water.add(pos)
-                to_modify.add((t,BLANK_CELL))
+                move(random.choice(positions))
+                delete()
             else: # water is no longer flowing
                 pos = None
                 if  rand_water:
-                    if blank_left and not left in next_water:
+                    if blank(left):
                         pos = left
                 else:
-                    if blank_right and not right in next_water:
+                    if blank(right):
                         pos = right
-                if random.random() < SPLASH_ODDS and blank_up and not up in next_water:
+                if random.random() < SPLASH_ODDS and blank(up):
                         pos = up
                 if pos != None:
-                    to_modify.add((pos,cell))
-                    to_modify.add((t,BLANK_CELL))
-                    next_water.add(pos)
+                    move(pos)
+                    delete()
+
         elif cell.logic == ROCK:
-            if blank_down or get_cell(down).logic == WATER:
-                to_modify.add((t,BLANK_CELL))
-                to_modify.add((down,cell))
+            if blank(down):
+                delete()
+                move(down)
+        
         elif cell.logic == FIRE:
-            to_modify.add((t,BLANK_CELL))
+            set_modify(t,m,BLANK_CELL)
             limit = cell.grade/LIMIT_GRADE_SCALE  # lower grade implies more probability and lower limit
             cell_new = copy.deepcopy(cell)
             cell_new.grade = cell.grade+1
             cell_new.skin = int(cell_new.grade/SKIN_TO_GRADE)
-            if cell_new.grade <= grade_limit or True:
-                if random.random()*up_correction > limit:
-                    to_modify.add((up,cell_new))
-                if random.random() > limit:
-                    if cointoss():
-                        to_modify.add((up_right,cell_new))
-                    else:
-                        to_modify.add((up_left,cell_new))
-                
-                if random.random()*side_correction > limit:
-                    if cointoss():
-                        to_modify.add((left,cell_new))
-                    else:
-                        to_modify.add((right,cell_new))
-
-    for x in to_modify:
-        t, cell = x
-        if cell.logic == BLANK:
-            set_cell(t, cell)
-            active_locations.discard(t)
-    for x in to_modify:
-        t, cell = x
-        if cell.logic != BLANK:
-            set_cell(t, cell)
+            if random.random()*up_correction > limit:
+                set_modify(up,m,cell_new)
+            if random.random() > limit:
+                if cointoss():
+                    set_modify(up_left,m,cell_new)
+                else:
+                    set_modify(up_right,m,cell_new)
+            
+            if random.random()*side_correction > limit:
+                if cointoss():
+                    set_modify(left,m,cell_new)
+                else:
+                    set_modify(right,m,cell_new)
+    for key in m:
+        t = set_t(key)
+        set_cell(t,m[key])
+        if m[key].logic != BLANK:
             active_locations.add(t)
+        else:
+            active_locations.discard(t)
     
             
     

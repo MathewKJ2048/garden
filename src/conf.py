@@ -1,22 +1,21 @@
-m = 64 * 2
-n = 128 * 2
+m = 128
+n = 360
 scale = 3
 max_frame_rate = 120
 
-spread = 3
+spread =3
 
-SPLASH_ODDS = 0.3
+SPLASH_ODDS = 0.1
 
 SAND_SPAWN_ODDS = 0.5
 WATER_SPAWN_ODDS = 0.5
 ROCK_SPAWN_ODDS = 0.9
 
 # fire parameters:
-up_correction = 2
-side_correction = 0.5
-grade_limit = 3
-LIMIT_GRADE_SCALE = 10
-SKIN_TO_GRADE = 3
+up_correction = 10 # higher value skews flame upwards
+side_correction = 0.5 # higher value makes the flame wider, larger and longer-lasting
+LIMIT_GRADE_SCALE = 10  # higher value implies bigger flame
+SKIN_TO_GRADE = 5 # higher value changes the gradient of the flame color
 
 BLANK = "BLANK"
 SAND = "SAND"
