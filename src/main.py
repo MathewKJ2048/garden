@@ -35,25 +35,24 @@ def process_mouse():
     mouse_x, mouse_y = pygame.mouse.get_pos()
     i, j = get_mouse_cell(mouse_x, mouse_y)
     if state == SAND:
-        set_sand(i, j, skin_type)
         for I in range(-spread, spread+1):
             for J in range(-spread, spread+1):
                 if random.random() < SAND_SPAWN_ODDS:
-                    set_sand(i+I, j+J, skin_type)
+                    set_mixed(i+I, j+J, SAND, skin_type)
     elif state == WATER:
         for I in range(-spread, spread+1):
             for J in range(-spread, spread+1):
                 if random.random() < WATER_SPAWN_ODDS:
-                    set_water(i+I, j+J)
-    elif state == BLANK:
-        set_blank(i,j)  
-    elif state == FIRE:
-        set_fire(i,j)          
+                    set_mixed(i+I, j+J, WATER, skin_type)
     elif state == ROCK:
         for I in range(-spread, spread+1):
             for J in range(-spread, spread+1):
                 if random.random() < ROCK_SPAWN_ODDS and (I+J+2*spread)%2 == 0:
-                    set_rock(i+I, j+J, skin_type)
+                    set_mixed(i+I, j+J, ROCK,skin_type)
+    elif state == BLANK:
+        set_mono(i,j,BLANK_CELL)
+    elif state == FIRE:
+        set_mono(i,j,FIRE_CORE_CELL)
 
 
 

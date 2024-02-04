@@ -48,35 +48,23 @@ def init():
         for j in range(n):
             matrix[i][j] = Cell(BLANK,0)
 
-def set_sand(i,j,type):
+def set_mixed(i,j,name,type):
     active_locations.add((i,j))
     if type == 0:
         type = (random.random()*1000)
-    set_cell((i,j),Cell(SAND,type))
+    set_cell((i,j),Cell(name,type))
 
-def set_rock(i,j,type):
+def set_mono(i,j,cell):
     active_locations.add((i,j))
-    if type == 0:
-        type = (random.random()*1000)
-    set_cell((i,j),Cell(ROCK,type))
-
-def set_water(i,j):
-    active_locations.add((i,j))
-    set_cell((i,j),WATER_CELL)
-
-def set_fire(i,j):
-    active_locations.add((i,j))
-    set_cell((i,j),FIRE_CORE_CELL)
-
-def set_blank(i,j):
-    active_locations.discard((i,j))
-    set_cell((i,j),BLANK_CELL)
+    set_cell((i,j),cell)
 
 def evolve():
     rand_water = cointoss() # decide which direction water moves this time
     m = {} # table to store all changes amde in this evolution
     changes = set()
     for t in active_locations:
+        if get_modify(t,m).logic != PLACEHOLDER:
+            continue
         i, j = t
         cell = get_cell(t)
         down = (i+1,j)
@@ -118,7 +106,7 @@ def evolve():
                 move(down_left)
             elif blank(down_right):
                 move(down_right)
-        """
+        
         elif cell.logic == WATER:
             positions = []
             if blank(down):
@@ -128,7 +116,7 @@ def evolve():
             if blank(down_right):
                 positions.append(down_right)
             if len(positions) != 0:
-                move(random.choice(positions))
+                move(random.choice(positions)) 
             else: # water is no longer flowing
                 pos = None
                 if rand_water:
@@ -141,7 +129,7 @@ def evolve():
                         pos = up
                 if pos != None:
                     move(pos)
-        """
+        
         
         if cell.logic == ROCK:
             
@@ -155,7 +143,7 @@ def evolve():
             for s in auxiliary_supports:
                 if get_cell(s).logic == ROCK:
                     ct_aux = ct_aux+1
-            if ct_prime <= 2 and ct_aux <= 2:
+            if ct_prime <= ROCK_PRIME_LIMIT and ct_aux <= ROCK_AUX_LIMIT:
                 if blank(down):
                     move(down)
                 elif get_cell(down).logic == WATER:

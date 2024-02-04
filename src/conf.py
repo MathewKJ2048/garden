@@ -21,6 +21,11 @@ side_correction = 0.5 # higher value makes the flame wider, larger and longer-la
 LIMIT_GRADE_SCALE = 10  # higher value implies bigger flame
 SKIN_TO_GRADE = 5 # higher value changes the gradient of the flame color
 
+# rock parameters:
+ROCK_AUX_LIMIT = 2      # limit 4
+ROCK_PRIME_LIMIT = 2    # limit 3
+# higher these numbers, harder the rock
+
 BLANK = "BLANK"
 SAND = "SAND"
 WATER = "WATER"
