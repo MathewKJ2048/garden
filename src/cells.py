@@ -81,7 +81,6 @@ def evolve():
     rand_water = cointoss() # decide which direction water moves this time
     m = {} # table to store all changes amde in this evolution
     changes = set()
-    print(str(len(active_locations)))
     for t in active_locations:
         i, j = t
         cell = get_cell(t)
@@ -95,28 +94,28 @@ def evolve():
         up_left = (i-1,j+1)
         def blank(t):
             return get_predict(t,m).logic == BLANK
-        def delete():
-            set_modify(t,m,BLANK_CELL)
-            changes.add(t)
         def move(t_):
             set_modify(t_,m,cell)
+            set_modify(t,m,BLANK_CELL)
+            changes.add(t)
             changes.add(t_)
-        def move_and_change(t_,nc):
+        def move_and_change(t_,nc): # move and put a changed copy
             set_modify(t_,m,nc)
             changes.add(t_)
-
-        
+            set_modify(t,m,BLANK_CELL)
+            changes.add(t)
+        def swap(t_): # swap cells between current and t_
+            nc = get_cell(t_)
+            set_modify(t,m,nc)
+            set_modify(t_,m,cell)
+            changes.add(t_)
+            changes.add(t)
         
         if cell.logic == SAND:
-            if blank(down) or blank(down_right) or blank(down_left):
-                delete()
             if blank(down):
                 move(down)
             elif blank(down_left) and blank(down_right):
-                if cointoss():
-                    move(down_left)
-                else:
-                    move(down_right)
+                move(pick_one(down_left,down_right))
             elif blank(down_left):
                 move(down_left)
             elif blank(down_right):
@@ -132,10 +131,9 @@ def evolve():
                 positions.append(down_right)
             if len(positions) != 0:
                 move(random.choice(positions))
-                delete()
             else: # water is no longer flowing
                 pos = None
-                if  rand_water:
+                if rand_water:
                     if blank(left):
                         pos = left
                 else:
@@ -145,32 +143,39 @@ def evolve():
                         pos = up
                 if pos != None:
                     move(pos)
-                    delete()
 
         elif cell.logic == ROCK:
             if blank(down):
-                delete()
                 move(down)
+            if get_cell(down).logic == WATER and get_modify(t,m) == None and get_modify(down,m) == None:
+                swap(down)
         
         elif cell.logic == FIRE:
-            delete()
+            def can_spread(t):
+                current = get_cell(t).logic
+                next_log = get_predict(t,m).logic
+                return (current == BLANK or current == FIRE) and (next_log == BLANK or next_log == FIRE)
             limit = cell.grade/LIMIT_GRADE_SCALE  # lower grade implies more probability and lower limit
             cell_new = copy.deepcopy(cell)
             cell_new.grade = cell.grade+1
             cell_new.skin = int(cell_new.grade/SKIN_TO_GRADE)
-            if random.random()*up_correction > limit:
+            if (random.random()*up_correction > limit) and can_spread(up):
                 move_and_change(up,cell_new)
             if random.random() > limit:
-                if cointoss():
+                if can_spread(up_left) and can_spread(up_right):
+                    move_and_change(pick_one(up_left,up_right),cell_new)
+                elif can_spread(up_left):
                     move_and_change(up_left,cell_new)
-                else:
+                elif can_spread(up_right):
                     move_and_change(up_right,cell_new)
-            
             if random.random()*side_correction > limit:
-                if cointoss():
+                if can_spread(left) and can_spread(right):
+                    move_and_change(pick_one(left,right),cell_new)
+                elif can_spread(left):
                     move_and_change(left,cell_new)
-                else:
+                elif can_spread(right):
                     move_and_change(right,cell_new)
+            set_modify(t,m,BLANK_CELL)
     for key in m:
         t = set_t(key)
         set_cell(t,m[key])
@@ -178,7 +183,6 @@ def evolve():
             active_locations.add(t)
         else:
             active_locations.discard(t)
-    print("render:"+str(len(changes)))
     return changes
     
             
@@ -202,3 +206,8 @@ def set_cell(t,cell):
 
 def cointoss():
     return random.random() < 0.5
+
+def pick_one(a,b):
+    if cointoss() < 0.5:
+        return a
+    return b

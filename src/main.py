@@ -93,4 +93,14 @@ while running:
     render_screen(changes)
     
     pygame.display.update()
+
+    debug = {}
+    for i in range(m):
+        for j in range(n):
+            if not matrix[i][j].logic in debug:
+                debug[matrix[i][j].logic] = 1
+            else:
+                debug[matrix[i][j].logic] = debug[matrix[i][j].logic] + 1
+    print(debug)
+
     pass

@@ -5,7 +5,7 @@ n = int(256 * window)
 scale = 3
 max_frame_rate = 120
 
-spread =3
+spread =2
 
 render_optimization = False
 
