@@ -2,7 +2,11 @@ import random
 import copy
 from conf import *
 
+G = 1
 
+def invert_gravity():
+    global G
+    G = -G
 
 class Cell:
     def __init__(self, logic, skin):
@@ -67,14 +71,14 @@ def evolve():
             continue
         i, j = t
         cell = get_cell(t)
-        down = (i+1,j)
-        down_left = (i+1,j-1)
-        down_right = (i+1,j+1)
+        down = (i+G,j)
+        down_left = (i+G,j-1)
+        down_right = (i+G,j+1)
         left = (i,j-1)
         right = (i,j+1)
-        up = (i-1,j)
-        up_right = (i-1,j+1)
-        up_left = (i-1,j+1)
+        up = (i-G,j)
+        up_right = (i-G,j+1)
+        up_left = (i-G,j+1)
         def blank(t):
             unconserved = {BLANK,FIRE}
             logic_now = get_cell(t).logic
@@ -91,11 +95,12 @@ def evolve():
             set_modify(t,m,BLANK_CELL)
             changes.add(t)
         def swap(t_): # swap cells between current and t_
-            nc = get_cell(t_)
-            set_modify(t,m,nc)
-            set_modify(t_,m,cell)
-            changes.add(t_)
-            changes.add(t)
+            if get_modify(t,t_).logic == PLACEHOLDER:
+                nc = get_cell(t_)
+                set_modify(t,m,nc)
+                set_modify(t_,m,cell)
+                changes.add(t_)
+                changes.add(t)
         
         if cell.logic == SAND:
             if blank(down):
@@ -106,6 +111,9 @@ def evolve():
                 move(down_left)
             elif blank(down_right):
                 move(down_right)
+            elif get_cell(down).logic == WATER:
+                swap(down)
+            
         
         elif cell.logic == WATER:
             positions = []
@@ -132,7 +140,6 @@ def evolve():
         
         
         if cell.logic == ROCK:
-            
             primary_supports = [left,right,up]
             auxiliary_supports = [up_left,up_right,down_left,down_right]
             ct_prime = 0
@@ -147,10 +154,7 @@ def evolve():
                 if blank(down):
                     move(down)
                 elif get_cell(down).logic == WATER:
-                    down_next_log = get_modify(t,down).logic
-                    cell_next_log = get_modify(t,m).logic
-                    if (down_next_log == PLACEHOLDER) and (cell_next_log == PLACEHOLDER):
-                        swap(down)
+                    swap(down)
         
         elif cell.logic == FIRE:
             limit = cell.grade/LIMIT_GRADE_SCALE  # lower grade implies more probability and lower limit

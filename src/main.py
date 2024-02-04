@@ -78,6 +78,8 @@ while running:
                 state = BLANK
             elif event.key == pygame.K_f:
                 state = FIRE
+            elif event.key == pygame.K_g:
+                invert_gravity()
             elif event.key == pygame.K_0:
                 skin_type = 0
             elif event.key == pygame.K_1:
