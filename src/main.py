@@ -4,13 +4,17 @@ import random
 from cells import *
 from render import *
 
+state = None
+spread = 3
+skin_type = 0
+
 pygame.init()
 
 
-scale = 4
+scale = 3
 height = m*scale
 width = n*scale
-max_frame_rate = 60
+max_frame_rate = 120
 
 
 screen = pygame.display.set_mode((width, height))
@@ -31,18 +35,59 @@ def get_mouse_cell(mouse_x, mouse_y):
 def process_mouse():
     mouse_x, mouse_y = pygame.mouse.get_pos()
     i, j = get_mouse_cell(mouse_x, mouse_y)
-    matrix[i][j] = "SAND"
+    if state == SAND:
+        set_sand(i, j, skin_type)
+        for I in range(-spread, spread+1):
+            for J in range(-spread, spread+1):
+                if random.random() < 0.5:
+                    set_sand(i+I, j+J, skin_type)
+    elif state == WATER:
+        for I in range(-spread, spread+1):
+            for J in range(-spread, spread+1):
+                if random.random() < 0.5:
+                    set_water(i+I, j+J)
+    elif state == BLANK:
+        set_blank(i,j)  
+    elif state == FIRE:
+        set_fire(i,j)          
+    elif state == ROCK:
+        for I in range(-spread, spread+1):
+            for J in range(-spread, spread+1):
+                if random.random() < 0.9:
+                    set_rock(i+I, j+J, skin_type)
 
 
 
 init()
 running = True
+
+
+
 while running:
     for event in pygame.event.get():
-
         if event.type == pygame.QUIT:
             running = False
-        process_mouse()
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_s:
+                state = SAND
+            elif event.key == pygame.K_c:
+                state = None
+            elif event.key == pygame.K_w:
+                state = WATER
+            elif event.key == pygame.K_r:
+                state = ROCK
+            elif event.key == pygame.K_b:
+                state = BLANK
+            elif event.key == pygame.K_f:
+                state = FIRE
+            elif event.key == pygame.K_0:
+                skin_type = 0
+            elif event.key == pygame.K_1:
+                skin_type = 1
+            elif event.key == pygame.K_2:
+                skin_type = 2
+        
+    process_mouse()
     dt = c.tick(max_frame_rate)
     time = time+dt
     evolve()
