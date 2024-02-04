@@ -10,6 +10,7 @@ a garden-simulator using cellular automata, written using pygame.
 `R` - rock
 `F` - fire
 `C` - reset
+`B` - clear
 
 
 ## Features:
@@ -21,13 +22,6 @@ a garden-simulator using cellular automata, written using pygame.
 
 ## To Do:
 
-- water + fire = steam (travels up and condenses)
-- coal (same as sand but flammable)
-- sand + fire = glass (same as rock but different color)
-- rock + fire - lava (flows like water but cools eventually)
+- flammable plants
 - implement sinking without loss of volume
 
-
-- optimize the rendering
-- rewrite core loop
-- 

@@ -15,7 +15,7 @@ class Cell:
 BLANK_CELL = Cell(BLANK,0)
 WATER_CELL = Cell(WATER,0)
 FIRE_CORE_CELL = Cell(FIRE,0)
-WALL_CELL = Cell(None,0)
+PLACEHOLDER_CELL = Cell(PLACEHOLDER,0)
 
 time = 0
 
@@ -35,12 +35,7 @@ def get_modify(t,table):
     key = set_key(t)
     if key in table:
         return table[key]
-    return None
-def get_predict(t,table):
-    p = get_modify(t,table)
-    if p == None:
-        return get_cell(t)
-    return p
+    return PLACEHOLDER_CELL
 def set_modify(t,table,cell):
     key = set_key(t)
     table[key] = cell
@@ -93,7 +88,10 @@ def evolve():
         up_right = (i-1,j+1)
         up_left = (i-1,j+1)
         def blank(t):
-            return get_predict(t,m).logic == BLANK
+            unconserved = {BLANK,FIRE}
+            logic_now = get_cell(t).logic
+            logic_next = get_modify(t,m).logic
+            return logic_now in unconserved and logic_next == PLACEHOLDER or logic_next in unconserved
         def move(t_):
             set_modify(t_,m,cell)
             set_modify(t,m,BLANK_CELL)
@@ -120,7 +118,7 @@ def evolve():
                 move(down_left)
             elif blank(down_right):
                 move(down_right)
-        
+        """
         elif cell.logic == WATER:
             positions = []
             if blank(down):
@@ -143,37 +141,49 @@ def evolve():
                         pos = up
                 if pos != None:
                     move(pos)
-
-        elif cell.logic == ROCK:
-            if blank(down):
-                move(down)
-            if get_cell(down).logic == WATER and get_modify(t,m) == None and get_modify(down,m) == None:
-                swap(down)
+        """
+        
+        if cell.logic == ROCK:
+            
+            primary_supports = [left,right,up]
+            auxiliary_supports = [up_left,up_right,down_left,down_right]
+            ct_prime = 0
+            ct_aux = 0
+            for s in primary_supports:
+                if get_cell(s).logic == ROCK:
+                    ct_prime=ct_prime+1
+            for s in auxiliary_supports:
+                if get_cell(s).logic == ROCK:
+                    ct_aux = ct_aux+1
+            if ct_prime <= 2 and ct_aux <= 2:
+                if blank(down):
+                    move(down)
+                elif get_cell(down).logic == WATER:
+                    down_next_log = get_modify(t,down).logic
+                    cell_next_log = get_modify(t,m).logic
+                    if (down_next_log == PLACEHOLDER) and (cell_next_log == PLACEHOLDER):
+                        swap(down)
         
         elif cell.logic == FIRE:
-            def can_spread(t):
-                current = get_cell(t).logic
-                next_log = get_predict(t,m).logic
-                return (current == BLANK or current == FIRE) and (next_log == BLANK or next_log == FIRE)
             limit = cell.grade/LIMIT_GRADE_SCALE  # lower grade implies more probability and lower limit
             cell_new = copy.deepcopy(cell)
             cell_new.grade = cell.grade+1
             cell_new.skin = int(cell_new.grade/SKIN_TO_GRADE)
-            if (random.random()*up_correction > limit) and can_spread(up):
+            if (random.random()*up_correction > limit) and blank(up):
                 move_and_change(up,cell_new)
             if random.random() > limit:
-                if can_spread(up_left) and can_spread(up_right):
+                if blank(up_left) and blank(up_right):
                     move_and_change(pick_one(up_left,up_right),cell_new)
-                elif can_spread(up_left):
+                elif blank(up_left):
                     move_and_change(up_left,cell_new)
-                elif can_spread(up_right):
+                elif blank(up_right):
                     move_and_change(up_right,cell_new)
             if random.random()*side_correction > limit:
-                if can_spread(left) and can_spread(right):
+                if blank(left) and blank(right):
                     move_and_change(pick_one(left,right),cell_new)
-                elif can_spread(left):
+                elif blank(left):
                     move_and_change(left,cell_new)
-                elif can_spread(right):
+                elif blank(right):
                     move_and_change(right,cell_new)
             set_modify(t,m,BLANK_CELL)
     for key in m:
@@ -193,13 +203,13 @@ def get_cell(t):
     i,j = t
     if 0 <= i and i < m and 0 <= j and j < n:
         return matrix[i][j]
-    return WALL_CELL
+    return PLACEHOLDER_CELL
 
 def set_cell(t,cell):
     assert type(cell) == Cell
     assert type(t) == tuple
     assert type(t[0]) == int
-    if get_cell(t) != WALL_CELL:
+    if get_cell(t) != PLACEHOLDER_CELL:
         i, j = t
         matrix[i][j] = cell
     return False

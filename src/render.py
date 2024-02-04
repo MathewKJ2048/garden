@@ -25,7 +25,7 @@ def get_colors(to_paint):
     for t in to_paint:
         i, j = t
         cell = get_cell(t)
-        if cell.logic == None:
+        if not cell.logic in colors:
             continue
         color_list = colors[cell.logic]
         skin = int(cell.skin % len(color_list))

@@ -52,7 +52,7 @@ def process_mouse():
     elif state == ROCK:
         for I in range(-spread, spread+1):
             for J in range(-spread, spread+1):
-                if random.random() < ROCK_SPAWN_ODDS:
+                if random.random() < ROCK_SPAWN_ODDS and (I+J+2*spread)%2 == 0:
                     set_rock(i+I, j+J, skin_type)
 
 
@@ -94,13 +94,14 @@ while running:
     
     pygame.display.update()
 
-    debug = {}
-    for i in range(m):
-        for j in range(n):
-            if not matrix[i][j].logic in debug:
-                debug[matrix[i][j].logic] = 1
-            else:
-                debug[matrix[i][j].logic] = debug[matrix[i][j].logic] + 1
-    print(debug)
+    if TALLY_DEBUG:
+        debug = {}
+        for i in range(m):
+            for j in range(n):
+                if not matrix[i][j].logic in debug:
+                    debug[matrix[i][j].logic] = 1
+                else:
+                    debug[matrix[i][j].logic] = debug[matrix[i][j].logic] + 1
+        print(debug)
 
     pass
