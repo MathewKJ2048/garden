@@ -3,18 +3,17 @@ import math
 import random
 from cells import *
 from render import *
+from conf import *
 
 state = None
-spread = 3
+
 skin_type = 0
 
 pygame.init()
 
 
-scale = 3
 height = m*scale
 width = n*scale
-max_frame_rate = 120
 
 
 screen = pygame.display.set_mode((width, height))
@@ -39,12 +38,12 @@ def process_mouse():
         set_sand(i, j, skin_type)
         for I in range(-spread, spread+1):
             for J in range(-spread, spread+1):
-                if random.random() < 0.5:
+                if random.random() < SAND_SPAWN_ODDS:
                     set_sand(i+I, j+J, skin_type)
     elif state == WATER:
         for I in range(-spread, spread+1):
             for J in range(-spread, spread+1):
-                if random.random() < 0.5:
+                if random.random() < WATER_SPAWN_ODDS:
                     set_water(i+I, j+J)
     elif state == BLANK:
         set_blank(i,j)  
@@ -53,7 +52,7 @@ def process_mouse():
     elif state == ROCK:
         for I in range(-spread, spread+1):
             for J in range(-spread, spread+1):
-                if random.random() < 0.9:
+                if random.random() < ROCK_SPAWN_ODDS:
                     set_rock(i+I, j+J, skin_type)
 
 

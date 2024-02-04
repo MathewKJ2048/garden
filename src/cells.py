@@ -1,14 +1,8 @@
 import random
 import copy
+from conf import *
 
-m = 64 * 2
-n = 128 * 2
 
-BLANK = "BLANK"
-SAND = "SAND"
-WATER = "WATER"
-ROCK = "ROCK"
-FIRE = "FIRE"
 
 class Cell:
     def __init__(self, logic, skin):
@@ -16,10 +10,10 @@ class Cell:
         self.skin = skin
         self.grade = 0
 
-BLANK_CELL = Cell("BLANK",0)
-WALL_CELL = Cell("WALL",0)
-
-
+BLANK_CELL = Cell(BLANK,0)
+WATER_CELL = Cell(WATER,0)
+FIRE_CORE_CELL = Cell(FIRE,0)
+WALL_CELL = Cell(None,0)
 
 time = 0
 
@@ -54,18 +48,18 @@ def set_rock(i,j,type):
 
 def set_water(i,j):
     active_locations.add((i,j))
-    set_cell((i,j),Cell(WATER,0))
+    set_cell((i,j),WATER_CELL)
 
 def set_fire(i,j):
     active_locations.add((i,j))
-    set_cell((i,j),Cell(FIRE,0))
+    set_cell((i,j),FIRE_CORE_CELL)
 
 def set_blank(i,j):
     active_locations.discard((i,j))
-    set_cell((i,j),Cell(BLANK,0))
+    set_cell((i,j),BLANK_CELL)
 
 def evolve():
-    rand_water = random.random()
+    rand_water = cointoss()
     next_water = set()
     to_modify = set()
     print(len(active_locations))
@@ -118,16 +112,17 @@ def evolve():
                 to_modify.add((pos,cell))
                 next_water.add(pos)
                 to_modify.add((t,BLANK_CELL))
-            else:
-                positions.append(t)
-                if  rand_water > 0.5:
+            else: # water is no longer flowing
+                pos = None
+                if  rand_water:
                     if blank_left and not left in next_water:
-                        positions.append(left)
+                        pos = left
                 else:
                     if blank_right and not right in next_water:
-                        positions.append(right)
-                pos = random.choice(positions)
-                if pos != t:
+                        pos = right
+                if random.random() < SPLASH_ODDS and blank_up and not up in next_water:
+                        pos = up
+                if pos != None:
                     to_modify.add((pos,cell))
                     to_modify.add((t,BLANK_CELL))
                     next_water.add(pos)
@@ -137,24 +132,21 @@ def evolve():
                 to_modify.add((down,cell))
         elif cell.logic == FIRE:
             to_modify.add((t,BLANK_CELL))
-            limit = cell.grade/10  # lower grade implies more probability and lower limit
-            up_correction = 2
-            side_correction = 0.5
-            grade_limit = 3
+            limit = cell.grade/LIMIT_GRADE_SCALE  # lower grade implies more probability and lower limit
             cell_new = copy.deepcopy(cell)
             cell_new.grade = cell.grade+1
-            cell_new.skin = int(cell_new.grade/3)
+            cell_new.skin = int(cell_new.grade/SKIN_TO_GRADE)
             if cell_new.grade <= grade_limit or True:
                 if random.random()*up_correction > limit:
                     to_modify.add((up,cell_new))
                 if random.random() > limit:
-                    if random.random() < 0.5:
+                    if cointoss():
                         to_modify.add((up_right,cell_new))
                     else:
                         to_modify.add((up_left,cell_new))
                 
                 if random.random()*side_correction > limit:
-                    if random.random() < 0.5:
+                    if cointoss():
                         to_modify.add((left,cell_new))
                     else:
                         to_modify.add((right,cell_new))
@@ -188,4 +180,6 @@ def set_cell(t,cell):
         i, j = t
         matrix[i][j] = cell
     return False
-    
+
+def cointoss():
+    return random.random() < 0.5
