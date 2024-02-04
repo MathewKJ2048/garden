@@ -80,7 +80,8 @@ def set_blank(i,j):
 def evolve():
     rand_water = cointoss() # decide which direction water moves this time
     m = {} # table to store all changes amde in this evolution
-    print(len(active_locations))
+    changes = set()
+    print(str(len(active_locations)))
     for t in active_locations:
         i, j = t
         cell = get_cell(t)
@@ -96,8 +97,13 @@ def evolve():
             return get_predict(t,m).logic == BLANK
         def delete():
             set_modify(t,m,BLANK_CELL)
-        def move(t):
-            set_modify(t,m,cell)
+            changes.add(t)
+        def move(t_):
+            set_modify(t_,m,cell)
+            changes.add(t_)
+        def move_and_change(t_,nc):
+            set_modify(t_,m,nc)
+            changes.add(t_)
 
         
         
@@ -147,24 +153,24 @@ def evolve():
                 move(down)
         
         elif cell.logic == FIRE:
-            set_modify(t,m,BLANK_CELL)
+            delete()
             limit = cell.grade/LIMIT_GRADE_SCALE  # lower grade implies more probability and lower limit
             cell_new = copy.deepcopy(cell)
             cell_new.grade = cell.grade+1
             cell_new.skin = int(cell_new.grade/SKIN_TO_GRADE)
             if random.random()*up_correction > limit:
-                set_modify(up,m,cell_new)
+                move_and_change(up,cell_new)
             if random.random() > limit:
                 if cointoss():
-                    set_modify(up_left,m,cell_new)
+                    move_and_change(up_left,cell_new)
                 else:
-                    set_modify(up_right,m,cell_new)
+                    move_and_change(up_right,cell_new)
             
             if random.random()*side_correction > limit:
                 if cointoss():
-                    set_modify(left,m,cell_new)
+                    move_and_change(left,cell_new)
                 else:
-                    set_modify(right,m,cell_new)
+                    move_and_change(right,cell_new)
     for key in m:
         t = set_t(key)
         set_cell(t,m[key])
@@ -172,6 +178,8 @@ def evolve():
             active_locations.add(t)
         else:
             active_locations.discard(t)
+    print("render:"+str(len(changes)))
+    return changes
     
             
     

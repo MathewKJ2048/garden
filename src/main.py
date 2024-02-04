@@ -22,11 +22,11 @@ pygame.display.set_caption("Garden")
 
 c = pygame.time.Clock()
 
-def render_screen():
-    get_colors()
-    for i in range(m):
-        for j in range(n):
-            pygame.draw.rect(screen, render[i][j], (j*scale, i*scale, scale, scale))
+def render_screen(changes):
+    tp = get_colors(changes)
+    for t in tp:
+        i, j = t
+        pygame.draw.rect(screen, get_render(i,j), (j*scale, i*scale, scale, scale))
 
 def get_mouse_cell(mouse_x, mouse_y):
     return int(mouse_y/scale), int(mouse_x/scale)
@@ -89,8 +89,8 @@ while running:
     process_mouse()
     dt = c.tick(max_frame_rate)
     time = time+dt
-    evolve()
-    render_screen()
+    changes = evolve()
+    render_screen(changes)
     
     pygame.display.update()
     pass

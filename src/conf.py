@@ -1,9 +1,13 @@
-m = 128
-n = 360
+
+window = 0.5
+m = int(128 * window)
+n = int(256 * window)
 scale = 3
 max_frame_rate = 120
 
 spread =3
+
+render_optimization = False
 
 SPLASH_ODDS = 0.1
 
