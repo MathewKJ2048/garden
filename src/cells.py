@@ -67,8 +67,7 @@ def evolve():
     m = {} # table to store all changes amde in this evolution
     changes = set()
     for t in active_locations:
-        if get_modify(t,m).logic != PLACEHOLDER:
-            continue
+        changes.add(t)
         i, j = t
         cell = get_cell(t)
         down = (i+G,j)
@@ -87,22 +86,21 @@ def evolve():
         def move(t_):
             set_modify(t_,m,cell)
             set_modify(t,m,BLANK_CELL)
-            changes.add(t)
             changes.add(t_)
         def move_and_change(t_,nc): # move and put a changed copy
             set_modify(t_,m,nc)
             changes.add(t_)
             set_modify(t,m,BLANK_CELL)
-            changes.add(t)
         def swap(t_): # swap cells between current and t_
             if get_modify(t,t_).logic == PLACEHOLDER:
                 nc = get_cell(t_)
                 set_modify(t,m,nc)
                 set_modify(t_,m,cell)
                 changes.add(t_)
-                changes.add(t)
+        def operable():
+            return get_modify(t,m).logic == PLACEHOLDER
         
-        if cell.logic == SAND:
+        if cell.logic == SAND and operable():
             if blank(down):
                 move(down)
             elif blank(down_left) and blank(down_right):
@@ -115,7 +113,7 @@ def evolve():
                 swap(down)
             
         
-        elif cell.logic == WATER:
+        elif cell.logic == WATER and operable():
             positions = []
             if blank(down):
                 positions.append(down)
@@ -139,7 +137,7 @@ def evolve():
                     move(pos)
         
         
-        if cell.logic == ROCK:
+        if cell.logic == ROCK and operable():
             primary_supports = [left,right,up]
             auxiliary_supports = [up_left,up_right,down_left,down_right]
             ct_prime = 0
@@ -156,7 +154,7 @@ def evolve():
                 elif get_cell(down).logic == WATER:
                     swap(down)
         
-        elif cell.logic == FIRE:
+        elif cell.logic == FIRE and operable():
             limit = cell.grade/LIMIT_GRADE_SCALE  # lower grade implies more probability and lower limit
             cell_new = copy.deepcopy(cell)
             cell_new.grade = cell.grade+1

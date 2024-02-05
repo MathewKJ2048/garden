@@ -10,7 +10,9 @@ a garden-simulator using cellular automata, written using pygame.
 `R` - rock
 `F` - fire
 `C` - reset
+`I` - inert material
 `B` - clear
+`G` - flip gravity
 
 
 ## Features:
