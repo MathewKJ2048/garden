@@ -58,6 +58,9 @@ def process_mouse():
                 elif state == FIRE:
                     if random.random() < FIRE_SPAWN_ODDS and math.sqrt(I**2+J**2)<=spread:
                         insert_cell(i+I,j+J,FIRE_CORE_CELL)
+                elif state == EMBER:
+                    if random.random() < EMBER_SPAWN_ODDS:
+                        insert_cell(i+I,j+J,Cell(EMBER,get_random_skin(EMBER),grade=EMBER_CAPACITY))
                 elif state == INERT:
                     insert_cell(i+I,j+J,Cell(INERT,get_random_skin(INERT)))
 
@@ -75,6 +78,8 @@ while running:
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_s:
                 state = SAND
+            if event.key == pygame.K_e:
+                state = EMBER
             elif event.key == pygame.K_c:
                 state = None
             elif event.key == pygame.K_w:

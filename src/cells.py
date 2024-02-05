@@ -29,7 +29,6 @@ PLACEHOLDER_CELL = Cell(PLACEHOLDER,0)
 INERT_CELL = Cell(INERT,0)
 ACID_CELL = Cell(ACID,0,ACID_STRENGTH)
 
-
 time = 0
 
 matrix = [None]*m
@@ -77,7 +76,7 @@ def evolve():
     global steps
     steps = steps+ 1
     rand_water = cointoss() # decide which direction water moves this time
-    m = {} # table to store all changes amde in this evolution
+    m = {} # table to store all changes made in this evolution
     changes = set()
 
     def blank(t):
@@ -93,6 +92,9 @@ def evolve():
         set_modify(t_,m,nc)
         changes.add(t_)
         delete(t)
+    def place(t, cell):
+        set_modify(t,m,cell)
+        changes.add(t)
     def swap(t,t_): # swap cells between current and t_
         if get_modify(t,t_).logic == PLACEHOLDER:
             set_modify(t,m,get_cell(t_))
@@ -128,6 +130,32 @@ def evolve():
                     move(t,down_right)
                 elif get_cell(down).logic == WATER:
                     swap(t,down)
+
+            if cell.logic == EMBER and operable(t):
+                if cell.grade <= 0:
+                    delete(t)
+                else:
+                    if blank(down):
+                        move(t,down)
+                    elif blank(down_left) and blank(down_right):
+                        move(t,pick_one(down_left,down_right))
+                    elif blank(down_left):
+                        move(t,down_left)
+                    elif blank(down_right):
+                        move(t,down_right)
+                    elif get_cell(down).logic == WATER:
+                        swap(t,down)
+                    if random.random() < EMBER_FLAMMABILITY_ODDS:
+                        action_positions = {up,down,left,right}
+                        positions = []
+                        for pos in action_positions:
+                            if blank(pos):
+                                positions.append(pos)
+                        if len(positions) != 0:
+                            place(random.choice(positions),FIRE_CORE_CELL)
+                            cell.grade = cell.grade - 1
+                
+
                 
             elif cell.logic == WATER and operable(t):
                 positions = []
@@ -164,7 +192,7 @@ def evolve():
                     delete(t)
                 else:
                     immune = {INERT,ACID,BLANK}
-                    action_directions = {up,down,left,right}
+                    action_directions = [up,down,left,right]
                     positions = []
                     for pos in action_directions:
                         if not get_cell(pos).logic in immune and operable(pos):
