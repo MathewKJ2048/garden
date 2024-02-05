@@ -3,7 +3,8 @@ window = 0.5 # quick scaling
 m = int(128 * window) # columns
 n = int(256 * window) # rows
 scale = 4 # number of pixels per automaton
-max_frame_rate = 120
+
+max_frame_rate = 60
 
 spread =1
 
@@ -34,6 +35,8 @@ ROCK_AUX_LIMIT = 2      # limit 4
 ROCK_PRIME_LIMIT = 2    # limit 3
 # higher these numbers, harder the rock
 
+WATER_FLUIDITY = 8 # range from 0 to infinity, water flows faster the higher this number is
+
 BLANK = "BLANK"
 SAND = "SAND"
 WATER = "WATER"
@@ -54,4 +57,4 @@ colors = {
 }
 
 # debug flags
-TALLY_DEBUG = False # presents running count of each element
+TALLY_DEBUG = True # presents running count of each element

@@ -4,6 +4,11 @@ from conf import *
 
 G = 1
 
+steps = 0
+
+def get_step():
+    return steps
+
 def invert_gravity():
     global G
     G = -G
@@ -63,126 +68,145 @@ def set_mono(i,j,cell):
     set_cell((i,j),cell)
 
 def evolve():
+
+    global steps
+    steps = steps+ 1
     rand_water = cointoss() # decide which direction water moves this time
     m = {} # table to store all changes amde in this evolution
     changes = set()
-    for t in active_locations:
-        changes.add(t)
-        i, j = t
-        cell = get_cell(t)
-        down = (i+G,j)
-        down_left = (i+G,j-1)
-        down_right = (i+G,j+1)
-        left = (i,j-1)
-        right = (i,j+1)
-        up = (i-G,j)
-        up_right = (i-G,j+1)
-        up_left = (i-G,j+1)
-        def blank(t):
-            unconserved = {BLANK,FIRE}
-            logic_now = get_cell(t).logic
-            logic_next = get_modify(t,m).logic
-            return logic_now in unconserved and logic_next == PLACEHOLDER or logic_next in unconserved
-        def move(t_):
-            set_modify(t_,m,cell)
-            set_modify(t,m,BLANK_CELL)
+
+    def blank(t):
+        unconserved = {BLANK,FIRE}
+        logic_now = get_cell(t).logic
+        logic_next = get_modify(t,m).logic
+        return logic_now in unconserved and logic_next == PLACEHOLDER or logic_next in unconserved
+    def move(t,t_):
+        set_modify(t_,m,get_cell(t))
+        delete(t)
+        changes.add(t_)
+    def move_and_change(t,t_,nc): # move and put a changed copy
+        set_modify(t_,m,nc)
+        changes.add(t_)
+        delete(t)
+    def swap(t,t_): # swap cells between current and t_
+        if get_modify(t,t_).logic == PLACEHOLDER:
+            set_modify(t,m,get_cell(t_))
+            set_modify(t_,m,get_cell(t))
             changes.add(t_)
-        def move_and_change(t_,nc): # move and put a changed copy
-            set_modify(t_,m,nc)
-            changes.add(t_)
-            set_modify(t,m,BLANK_CELL)
-        def swap(t_): # swap cells between current and t_
-            if get_modify(t,t_).logic == PLACEHOLDER:
-                nc = get_cell(t_)
-                set_modify(t,m,nc)
-                set_modify(t_,m,cell)
-                changes.add(t_)
-        def operable():
-            return get_modify(t,m).logic == PLACEHOLDER
-        
-        if cell.logic == SAND and operable():
-            if blank(down):
-                move(down)
-            elif blank(down_left) and blank(down_right):
-                move(pick_one(down_left,down_right))
-            elif blank(down_left):
-                move(down_left)
-            elif blank(down_right):
-                move(down_right)
-            elif get_cell(down).logic == WATER:
-                swap(down)
+    def operable(t):
+        return get_modify(t,m).logic == PLACEHOLDER
+    def delete(t):
+        set_modify(t,m,BLANK_CELL)
+
+    def process(sand,water,rock,fire):
+        for t in active_locations:
+            changes.add(t)
+            i, j = t
+            cell = get_cell(t)
+            down = (i+G,j)
+            down_left = (i+G,j-1)
+            down_right = (i+G,j+1)
+            left = (i,j-1)
+            right = (i,j+1)
+            up = (i-G,j)
+            up_right = (i-G,j+1)
+            up_left = (i-G,j+1)
             
-        
-        elif cell.logic == WATER and operable():
-            positions = []
-            if blank(down):
-                positions.append(down)
-            if blank(down_left):
-                positions.append(down_left)
-            if blank(down_right):
-                positions.append(down_right)
-            if len(positions) != 0:
-                move(random.choice(positions)) 
-            else: # water is no longer flowing
-                pos = None
-                if rand_water:
-                    if blank(left):
-                        pos = left
-                else:
-                    if blank(right):
-                        pos = right
-                if random.random() < SPLASH_ODDS and blank(up):
-                        pos = up
-                if pos != None:
-                    move(pos)
-        
-        
-        if cell.logic == ROCK and operable():
-            primary_supports = [left,right,up]
-            auxiliary_supports = [up_left,up_right,down_left,down_right]
-            ct_prime = 0
-            ct_aux = 0
-            for s in primary_supports:
-                if get_cell(s).logic == ROCK:
-                    ct_prime=ct_prime+1
-            for s in auxiliary_supports:
-                if get_cell(s).logic == ROCK:
-                    ct_aux = ct_aux+1
-            if ct_prime <= ROCK_PRIME_LIMIT and ct_aux <= ROCK_AUX_LIMIT:
+            if sand and cell.logic == SAND and operable(t):
                 if blank(down):
-                    move(down)
+                    move(t,down)
+                elif blank(down_left) and blank(down_right):
+                    move(t,pick_one(down_left,down_right))
+                elif blank(down_left):
+                    move(t,down_left)
+                elif blank(down_right):
+                    move(t,down_right)
                 elif get_cell(down).logic == WATER:
-                    swap(down)
-        
-        elif cell.logic == FIRE and operable():
-            limit = cell.grade/LIMIT_GRADE_SCALE  # lower grade implies more probability and lower limit
-            cell_new = copy.deepcopy(cell)
-            cell_new.grade = cell.grade+1
-            cell_new.skin = int(cell_new.grade/SKIN_TO_GRADE)
-            if (random.random()*up_correction > limit) and blank(up):
-                move_and_change(up,cell_new)
-            if random.random() > limit:
-                if blank(up_left) and blank(up_right):
-                    move_and_change(pick_one(up_left,up_right),cell_new)
-                elif blank(up_left):
-                    move_and_change(up_left,cell_new)
-                elif blank(up_right):
-                    move_and_change(up_right,cell_new)
-            if random.random()*side_correction > limit:
-                if blank(left) and blank(right):
-                    move_and_change(pick_one(left,right),cell_new)
-                elif blank(left):
-                    move_and_change(left,cell_new)
-                elif blank(right):
-                    move_and_change(right,cell_new)
-            set_modify(t,m,BLANK_CELL)
-    for key in m:
-        t = set_t(key)
-        set_cell(t,m[key])
-        if m[key].logic != BLANK:
+                    swap(t,down)
+                
+            elif water and cell.logic == WATER and operable(t):
+                positions = []
+                if blank(down):
+                    positions.append(down)
+                if blank(down_left):
+                    positions.append(down_left)
+                if blank(down_right):
+                    positions.append(down_right)
+                if len(positions) != 0:
+                    move(t,random.choice(positions)) 
+                else: # water is no longer flowing
+                    pos = None
+                    if rand_water:
+                        if blank(left):
+                            pos = left
+                    else:
+                        if blank(right):
+                            pos = right
+                    if random.random() < SPLASH_ODDS and blank(up):
+                            pos = up
+                    if pos != None:
+                        move(t,pos)
+            
+            elif rock and cell.logic == ROCK and operable(t):
+                primary_supports = [left,right,up]
+                auxiliary_supports = [up_left,up_right,down_left,down_right]
+                ct_prime = 0
+                ct_aux = 0
+                for s in primary_supports:
+                    if get_cell(s).logic == ROCK:
+                        ct_prime=ct_prime+1
+                for s in auxiliary_supports:
+                    if get_cell(s).logic == ROCK:
+                        ct_aux = ct_aux+1
+                if ct_prime <= ROCK_PRIME_LIMIT and ct_aux <= ROCK_AUX_LIMIT:
+                    if blank(down):
+                        move(t,down)
+                    elif get_cell(down).logic == WATER:
+                        swap(t,down)
+            
+            elif fire and cell.logic == FIRE and operable(t):
+                limit = cell.grade/LIMIT_GRADE_SCALE  # lower grade implies more probability and lower limit
+                cell_new = copy.deepcopy(cell)
+                cell_new.grade = cell.grade+1
+                cell_new.skin = int(cell_new.grade/SKIN_TO_GRADE)
+                if (random.random()*up_correction > limit) and blank(up):
+                    move_and_change(t,up,cell_new)
+                if random.random() > limit:
+                    if blank(up_left) and blank(up_right):
+                        move_and_change(t,pick_one(up_left,up_right),cell_new)
+                    elif blank(up_left):
+                        move_and_change(t,up_left,cell_new)
+                    elif blank(up_right):
+                        move_and_change(t,up_right,cell_new)
+                if random.random()*side_correction > limit:
+                    if blank(left) and blank(right):
+                        move_and_change(t,pick_one(left,right),cell_new)
+                    elif blank(left):
+                        move_and_change(t,left,cell_new)
+                    elif blank(right):
+                        move_and_change(t,right,cell_new)
+                delete(t)
+
+        for key in m:
+            t = set_t(key)
+            set_cell(t,m[key])
             active_locations.add(t)
-        else:
-            active_locations.discard(t)
+
+        m.clear()
+        
+
+    process(True,True,True,True)
+    for i in range(WATER_FLUIDITY):
+        process(False,True,False,False)
+
+    to_deactivate = set()
+    for t in active_locations:
+        if get_cell(t).logic == BLANK:
+            to_deactivate.add(t)
+    
+    for t in to_deactivate:
+        active_locations.discard(t)
+
     return changes
     
             

@@ -101,7 +101,7 @@ while running:
 
     if int((time-last_time)/ 1000) != 0:
         last_time = time
-        print("framerate:"+str(int(c.get_fps())))
+        print("framerate:"+str(int(c.get_fps()))+"\tstep:"+str(get_step())+"\tactive cells:"+str(len(active_locations)))
         if TALLY_DEBUG:
             debug = {}
             for i in range(m):
