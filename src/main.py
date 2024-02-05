@@ -27,9 +27,13 @@ def render_screen(changes):
     for t in tp:
         i, j = t
         pygame.draw.rect(screen, get_render(i,j), (j*scale, i*scale, scale, scale))
+    pygame.display.update()
 
 def get_mouse_cell(mouse_x, mouse_y):
     return int(mouse_y/scale), int(mouse_x/scale)
+
+def get_random_skin(cell_logic):
+    return (random.random()*1000)%len(colors[cell_logic])
 
 def process_mouse():
     spread = get_spread()-1
@@ -39,26 +43,29 @@ def process_mouse():
             for J in range(-spread, spread+1):
                 if state == SAND:
                     if random.random() < SAND_SPAWN_ODDS:
-                        set_mixed(i+I, j+J, SAND, skin_type)
+                        insert_cell(i+I,j+J,Cell(SAND,get_random_skin(SAND)))
                 elif state == BLANK:
-                        set_mono(i+I,j+J,BLANK_CELL)
+                        insert_cell(i+I,j+J,BLANK_CELL)
                 elif state == WATER:
                     if random.random() < WATER_SPAWN_ODDS:
-                        set_mixed(i+I, j+J, WATER, skin_type)
+                        insert_cell(i+I, j+J, Cell(WATER,get_random_skin(WATER),velocity=pick_one(1,-1)))
+                elif state == ACID:
+                    if random.random() < ACID_SPAWN_ODDS:
+                        insert_cell(i+I, j+J, Cell(ACID,get_random_skin(ACID),velocity=pick_one(1,-1),grade=ACID_STRENGTH))
                 elif state == ROCK:
                     if random.random() < ROCK_SPAWN_ODDS and (I+J+2*spread)%2 == 0:
-                        set_mixed(i+I, j+J, ROCK,skin_type)
+                        insert_cell(i+I, j+J, Cell(ROCK,get_random_skin(ROCK)))
                 elif state == FIRE:
-                    if random.random() < FIRE_SPAWN_ODDS:
-                        set_mono(i+I,j+J,FIRE_CORE_CELL)
+                    if random.random() < FIRE_SPAWN_ODDS and math.sqrt(I**2+J**2)<=spread:
+                        insert_cell(i+I,j+J,FIRE_CORE_CELL)
                 elif state == INERT:
-                    set_mixed(i+I,j+J,INERT,skin_type)
+                    insert_cell(i+I,j+J,Cell(INERT,get_random_skin(INERT)))
 
 
 
 init()
 running = True
-
+READOUT = False
 
 last_time = 0
 while running:
@@ -72,6 +79,8 @@ while running:
                 state = None
             elif event.key == pygame.K_w:
                 state = WATER
+            elif event.key == pygame.K_a:
+                state = ACID
             elif event.key == pygame.K_r:
                 state = ROCK
             elif event.key == pygame.K_b:
@@ -82,14 +91,10 @@ while running:
                 state = INERT
             elif event.key == pygame.K_g:
                 invert_gravity()
-            elif event.key == pygame.K_0:
-                set_spread(0)
-            elif event.key == pygame.K_1:
-                set_spread(1)
-            elif event.key == pygame.K_2:
-                set_spread(2)
-            elif event.key == pygame.K_3:
-                set_spread(3)
+            elif event.key == pygame.K_l:
+                READOUT = True
+            elif event.unicode.isdigit():
+                set_spread(int(event.unicode))
         
     process_mouse()
     dt = c.tick(max_frame_rate)
@@ -97,19 +102,29 @@ while running:
     
     changes = evolve()
     render_screen(changes)
-    pygame.display.update()
 
-    if int((time-last_time)/ 1000) != 0:
-        last_time = time
-        print("framerate:"+str(int(c.get_fps()))+"\tstep:"+str(get_step())+"\tactive cells:"+str(len(active_locations)))
-        if TALLY_DEBUG:
-            debug = {}
-            for i in range(m):
-                for j in range(n):
-                    if not matrix[i][j].logic in debug:
-                        debug[matrix[i][j].logic] = 1
-                    else:
-                        debug[matrix[i][j].logic] = debug[matrix[i][j].logic] + 1
-            print(debug)
+    if READOUT:
+        print("----")
+        fps = int(c.get_fps())
+        print("performance:\t"+str(int(100*fps/max_frame_rate))+"%")
+        print("step:\t"+str(get_step()))
+        print("active cells:\t"+str(len(active_locations)))
+        debug = {}
+        for i in range(m):
+            for j in range(n):
+                if not matrix[i][j].logic in debug:
+                    debug[matrix[i][j].logic] = 1
+                else:
+                    debug[matrix[i][j].logic] = debug[matrix[i][j].logic] + 1
+        print("cell types:\t\t"+str(debug))
+        active_debug = {}
+        for t in active_locations:
+            log = get_cell(t).logic
+            if not log in active_debug:
+                active_debug[log] = 1
+            else:
+                active_debug[log] = active_debug[log]+1
+        print("active cell types:\t\t"+str(active_debug))
+        READOUT = False   
 
     pass

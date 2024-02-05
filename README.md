@@ -24,6 +24,10 @@ a garden-simulator using cellular automata, written using pygame.
 
 ## To Do:
 
-- flammable plants
-- implement sinking without loss of volume
+- oil
+
+- weeds
+- flowers
+- trees
+
 

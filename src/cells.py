@@ -2,7 +2,7 @@ import random
 import copy
 from conf import *
 
-G = 1
+G = 1 # direction of gravity
 
 steps = 0
 
@@ -14,10 +14,11 @@ def invert_gravity():
     G = -G
 
 class Cell:
-    def __init__(self, logic, skin):
+    def __init__(self, logic, skin, grade = 0, velocity=0):
         self.logic = logic
         self.skin = skin
-        self.grade = 0
+        self.grade = grade
+        self.velocity = velocity
 
 
 
@@ -25,6 +26,9 @@ BLANK_CELL = Cell(BLANK,0)
 WATER_CELL = Cell(WATER,0)
 FIRE_CORE_CELL = Cell(FIRE,0)
 PLACEHOLDER_CELL = Cell(PLACEHOLDER,0)
+INERT_CELL = Cell(INERT,0)
+ACID_CELL = Cell(ACID,0,ACID_STRENGTH)
+
 
 time = 0
 
@@ -33,7 +37,6 @@ for i in range(m):
     matrix[i] = [None]*n
 
 active_locations = set()
-
 def set_t(key):
     nums = key.split()
     return (int(nums[0]),int(nums[1]))
@@ -41,13 +44,20 @@ def set_key(t):
     i,j = t
     return str(i)+" "+str(j)
 def get_modify(t,table): 
-    key = set_key(t)
-    if key in table:
-        return table[key]
-    return PLACEHOLDER_CELL
+    try:
+        i, j = t
+        assert(i>=0 and j>=0 and i<m and j<n)
+        return table[set_key(t)]
+    except:
+        return PLACEHOLDER_CELL
 def set_modify(t,table,cell):
-    key = set_key(t)
-    table[key] = cell
+    try:
+        i,j = t
+        assert(i>=0 and j>=0 and i<m and j<n)
+        key = set_key(t)
+        table[key] = cell
+    except:
+        pass
 
 def init():
     global m
@@ -57,13 +67,8 @@ def init():
         for j in range(n):
             matrix[i][j] = Cell(BLANK,0)
 
-def set_mixed(i,j,name,type):
-    active_locations.add((i,j))
-    if type == 0:
-        type = (random.random()*1000)
-    set_cell((i,j),Cell(name,type))
 
-def set_mono(i,j,cell):
+def insert_cell(i,j,cell):
     active_locations.add((i,j))
     set_cell((i,j),cell)
 
@@ -98,7 +103,7 @@ def evolve():
     def delete(t):
         set_modify(t,m,BLANK_CELL)
 
-    def process(sand,water,rock,fire):
+    def process():
         for t in active_locations:
             changes.add(t)
             i, j = t
@@ -112,7 +117,7 @@ def evolve():
             up_right = (i-G,j+1)
             up_left = (i-G,j+1)
             
-            if sand and cell.logic == SAND and operable(t):
+            if cell.logic == SAND and operable(t):
                 if blank(down):
                     move(t,down)
                 elif blank(down_left) and blank(down_right):
@@ -124,7 +129,7 @@ def evolve():
                 elif get_cell(down).logic == WATER:
                     swap(t,down)
                 
-            elif water and cell.logic == WATER and operable(t):
+            elif cell.logic == WATER and operable(t):
                 positions = []
                 if blank(down):
                     positions.append(down)
@@ -133,21 +138,70 @@ def evolve():
                 if blank(down_right):
                     positions.append(down_right)
                 if len(positions) != 0:
-                    move(t,random.choice(positions)) 
+                    move(t,random.choice(positions))
+                elif blank(up) and random.random() < SPLASH_ODDS:
+                    move(t,up)
                 else: # water is no longer flowing
-                    pos = None
-                    if rand_water:
-                        if blank(left):
-                            pos = left
+                    bl = blank(left)
+                    br = blank(right)
+                    # move in given velocity, if blocked then invert velocity
+                    if cell.velocity == 1:
+                        if bl:
+                            move(t,left)
+                        elif br:
+                            move(t,right)
+                            cell.velocity = -1
                     else:
-                        if blank(right):
-                            pos = right
-                    if random.random() < SPLASH_ODDS and blank(up):
-                            pos = up
-                    if pos != None:
-                        move(t,pos)
+                        if br:
+                            move(t,right)
+                        elif bl:
+                            move(t,left)
+                            cell.velocity = 1
+                    pass
+
+            elif cell.logic == ACID and operable(t):
+                if cell.grade == 0:
+                    delete(t)
+                else:
+                    immune = {INERT,ACID,BLANK}
+                    action_directions = {up,down,left,right}
+                    positions = []
+                    for pos in action_directions:
+                        if not get_cell(pos).logic in immune and operable(pos):
+                            positions.append(pos)
+                    if len(positions) != 0:
+                        delete(random.choice(positions))
+                        cell.grade = cell.grade-1
+                    else:
+                        positions = []
+                        if blank(down):
+                            positions.append(down)
+                        if blank(down_left):
+                            positions.append(down_left)
+                        if blank(down_right):
+                            positions.append(down_right)
+                        if len(positions) != 0:
+                            move(t,random.choice(positions))
+                        elif blank(up) and random.random() < SPLASH_ODDS:
+                            move(t,up)
+                        else: # acid is no longer flowing
+                            bl = blank(left)
+                            br = blank(right)
+                            # move in given velocity, if blocked then invert velocity
+                            if cell.velocity == 1:
+                                if bl:
+                                    move(t,left)
+                                elif br:
+                                    move(t,right)
+                                    cell.velocity = -1
+                            else:
+                                if br:
+                                    move(t,right)
+                                elif bl:
+                                    move(t,left)
+                                    cell.velocity = 1
             
-            elif rock and cell.logic == ROCK and operable(t):
+            elif cell.logic == ROCK and operable(t):
                 primary_supports = [left,right,up]
                 auxiliary_supports = [up_left,up_right,down_left,down_right]
                 ct_prime = 0
@@ -164,7 +218,7 @@ def evolve():
                     elif get_cell(down).logic == WATER:
                         swap(t,down)
             
-            elif fire and cell.logic == FIRE and operable(t):
+            elif cell.logic == FIRE and operable(t):
                 limit = cell.grade/LIMIT_GRADE_SCALE  # lower grade implies more probability and lower limit
                 cell_new = copy.deepcopy(cell)
                 cell_new.grade = cell.grade+1
@@ -195,38 +249,35 @@ def evolve():
         m.clear()
         
 
-    process(True,True,True,True)
-    for i in range(WATER_FLUIDITY):
-        process(False,True,False,False)
+    process()
 
     to_deactivate = set()
     for t in active_locations:
-        if get_cell(t).logic == BLANK:
+        log = get_cell(t).logic
+        if log in {PLACEHOLDER,BLANK,INERT}:
             to_deactivate.add(t)
     
-    for t in to_deactivate:
-        active_locations.discard(t)
+    active_locations.difference_update(to_deactivate)
 
     return changes
     
-            
     
 
 def get_cell(t):
-    assert type(t) == tuple
-    i,j = t
-    if 0 <= i and i < m and 0 <= j and j < n:
+    try:
+        i, j = t
+        assert(i>=0 and j>=0 and i<m and j<n)
         return matrix[i][j]
-    return PLACEHOLDER_CELL
+    except:
+        return INERT_CELL
 
 def set_cell(t,cell):
-    assert type(cell) == Cell
-    assert type(t) == tuple
-    assert type(t[0]) == int
-    if get_cell(t) != PLACEHOLDER_CELL:
+    try:
         i, j = t
+        assert(i>=0 and j>=0 and i<m and j<n)
         matrix[i][j] = cell
-    return False
+    except:
+        pass
 
 def cointoss():
     return random.random() < 0.5
