@@ -49,6 +49,9 @@ def process_mouse():
                 elif state == WATER:
                     if random.random() < WATER_SPAWN_ODDS:
                         insert_cell(i+I, j+J, Cell(WATER,get_random_skin(WATER),velocity=pick_one(1,-1)))
+                elif state == OIL:
+                    if random.random() < OIL_SPAWN_ODDS:
+                        insert_cell(i+I, j+J, Cell(OIL,get_random_skin(OIL),velocity=pick_one(1,-1)))
                 elif state == ACID:
                     if random.random() < ACID_SPAWN_ODDS:
                         insert_cell(i+I, j+J, Cell(ACID,get_random_skin(ACID),velocity=pick_one(1,-1),grade=ACID_STRENGTH))
@@ -63,10 +66,15 @@ def process_mouse():
                         insert_cell(i+I,j+J,Cell(EMBER,get_random_skin(EMBER),grade=EMBER_CAPACITY))
                 elif state == INERT:
                     insert_cell(i+I,j+J,Cell(INERT,get_random_skin(INERT)))
+                elif state == WOOD:
+                    if random.random() < EMBER_SPAWN_ODDS:
+                        insert_cell(i+I,j+J,Cell(WOOD,get_random_skin(WOOD)))
 
 
 
 init()
+screen.fill(colors[BLANK][0])
+pygame.display.update()
 running = True
 READOUT = False
 
@@ -84,6 +92,8 @@ while running:
                 state = None
             elif event.key == pygame.K_w:
                 state = WATER
+            elif event.key == pygame.K_o:
+                state = OIL
             elif event.key == pygame.K_a:
                 state = ACID
             elif event.key == pygame.K_r:
@@ -92,6 +102,8 @@ while running:
                 state = BLANK
             elif event.key == pygame.K_f:
                 state = FIRE
+            elif event.key == pygame.K_q:
+                state = WOOD
             elif event.key == pygame.K_i:
                 state = INERT
             elif event.key == pygame.K_g:

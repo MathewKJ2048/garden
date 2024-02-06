@@ -24,6 +24,8 @@ ROCK_SPAWN_ODDS = 0.5
 FIRE_SPAWN_ODDS = 0.5
 ACID_SPAWN_ODDS = 0.5
 EMBER_SPAWN_ODDS = 0.5
+WOOD_SPAWN_ODDS = 0.5
+OIL_SPAWN_ODDS = 0.5
 
 # fire parameters:
 up_correction = 10 # higher value skews flame upwards
@@ -38,8 +40,10 @@ ROCK_PRIME_LIMIT = 2    # limit 3
 
 ACID_STRENGTH = 3 # higher value -> consumes more before disappearing
 
-EMBER_CAPACITY = 10 # higher value -> burns more
-EMBER_FLAMMABILITY_ODDS = 0.1 # higher value -> burns more powerfully
+EMBER_LASTING = 100 # time the ember lasts for
+EMBER_FLAMMABILITY_ODDS = 0.1 # higher value -> ignites more often
+
+EMBER_CAPACITY = EMBER_LASTING*EMBER_FLAMMABILITY_ODDS
 
 BLANK = "BLANK"
 SAND = "SAND"
@@ -49,18 +53,22 @@ FIRE = "FIRE"
 ACID = "ACID"
 EMBER = "EMBER"
 INERT = "INERT"
+WOOD = "WOOD"
+OIL = "OIL"
 PLACEHOLDER = "PLACEHOLDER"
 
-
+FLUIDS = [WATER,OIL,ACID]
 
 colors = {
     BLANK: [(0,0,0)],
     SAND: [(246,215,176),(242,210,169),(236,204,162),(231,196,150),(225,191,146)],
     WATER: [(0,100,250)],
-    ROCK: [(100,100,100),(125,125,125),(150,150,150)], 
-    FIRE: [(255,255,255),(230,220,0),(200,180,0),(234,170,0),(169,67,30)],
+    ROCK: [(200,200,200),(125,125,125),(150,150,150)], 
+    FIRE: [(250,250,250),(230,220,0),(200,180,0),(234,170,0),(169,67,30)],
     INERT: [(100,0,100),(150,30,150),(200,50,200)],
     ACID: [(100,255,0)],
-    EMBER: [(150,0,0)]
+    EMBER: [(150,0,0)],
+    WOOD: [(140,70,20)],
+    OIL: [(100,100,100)]
 }
 

@@ -5,24 +5,19 @@ a garden-simulator using cellular automata, written using pygame.
 
 `python ./src/main.py`
 
-`S` - sand
-`W` - water
-`R` - rock
-`F` - fire
-`A` - acid
-`C` - reset
-`I` - inert material
-`B` - clear
-`G` - flip gravity
-`L` - stats
+`S` - sand  
+`W` - water  
+`R` - rock  
+`F` - fire  
+`A` - acid  
+`O` - oil
+`E` - embers
+`I` - inert material  
+`C` - nothing  
+`B` - erase  
+`G` - flip gravity  
+`L` - stats  
 
-
-## Features:
-
-- sand
-- water
-- rocks
-- fire
 
 ## To Do:
 

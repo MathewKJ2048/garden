@@ -106,7 +106,9 @@ def evolve():
         set_modify(t,m,BLANK_CELL)
 
     def process():
-        for t in active_locations:
+        al = list(active_locations)
+        random.shuffle(al)
+        for t in al:
             changes.add(t)
             i, j = t
             cell = get_cell(t)
@@ -117,7 +119,7 @@ def evolve():
             right = (i,j+1)
             up = (i-G,j)
             up_right = (i-G,j+1)
-            up_left = (i-G,j+1)
+            up_left = (i-G,j-1)
             
             if cell.logic == SAND and operable(t):
                 if blank(down):
@@ -128,7 +130,7 @@ def evolve():
                     move(t,down_left)
                 elif blank(down_right):
                     move(t,down_right)
-                elif get_cell(down).logic == WATER:
+                elif get_cell(down).logic in FLUIDS:
                     swap(t,down)
 
             if cell.logic == EMBER and operable(t):
@@ -143,7 +145,7 @@ def evolve():
                         move(t,down_left)
                     elif blank(down_right):
                         move(t,down_right)
-                    elif get_cell(down).logic == WATER:
+                    elif get_cell(down).logic in FLUIDS:
                         swap(t,down)
                     if random.random() < EMBER_FLAMMABILITY_ODDS:
                         action_positions = {up,down,left,right}
@@ -155,39 +157,30 @@ def evolve():
                             place(random.choice(positions),FIRE_CORE_CELL)
                             cell.grade = cell.grade - 1
                 
-
-                
-            elif cell.logic == WATER and operable(t):
-                positions = []
-                if blank(down):
-                    positions.append(down)
-                if blank(down_left):
-                    positions.append(down_left)
-                if blank(down_right):
-                    positions.append(down_right)
-                if len(positions) != 0:
-                    move(t,random.choice(positions))
-                elif blank(up) and random.random() < SPLASH_ODDS:
-                    move(t,up)
-                else: # water is no longer flowing
-                    bl = blank(left)
-                    br = blank(right)
-                    # move in given velocity, if blocked then invert velocity
-                    if cell.velocity == 1:
-                        if bl:
-                            move(t,left)
-                        elif br:
-                            move(t,right)
-                            cell.velocity = -1
+            if cell.logic == OIL and operable(t):
+                swappable_postions = [up,up_left,up_right]
+                sp = []
+                for pos in swappable_postions:
+                    if operable(pos) and get_cell(pos).logic == WATER:
+                        sp.append(pos)
+                if len(sp)!=0:
+                    swap(t,random.choice(sp))
+                else:
+                    sl = operable(left) and get_cell(left).logic == WATER
+                    sr = operable(right) and get_cell(right).logic == WATER
+                    if cell.velocity == 1 and sl:
+                        swap(t,left)
+                    elif cell.velocity == -1 and sr:
+                        swap(t,right)
                     else:
-                        if br:
-                            move(t,right)
-                        elif bl:
-                            move(t,left)
+                        if sl:
+                            swap(t,left)
                             cell.velocity = 1
-                    pass
+                        elif sr:
+                            swap(t,right)
+                            cell.velocity = -1
 
-            elif cell.logic == ACID and operable(t):
+            if cell.logic == ACID and operable(t):
                 if cell.grade == 0:
                     delete(t)
                 else:
@@ -200,34 +193,48 @@ def evolve():
                     if len(positions) != 0:
                         delete(random.choice(positions))
                         cell.grade = cell.grade-1
-                    else:
-                        positions = []
-                        if blank(down):
-                            positions.append(down)
-                        if blank(down_left):
-                            positions.append(down_left)
-                        if blank(down_right):
-                            positions.append(down_right)
-                        if len(positions) != 0:
-                            move(t,random.choice(positions))
-                        elif blank(up) and random.random() < SPLASH_ODDS:
-                            move(t,up)
-                        else: # acid is no longer flowing
-                            bl = blank(left)
-                            br = blank(right)
-                            # move in given velocity, if blocked then invert velocity
-                            if cell.velocity == 1:
-                                if bl:
-                                    move(t,left)
-                                elif br:
-                                    move(t,right)
-                                    cell.velocity = -1
-                            else:
-                                if br:
-                                    move(t,right)
-                                elif bl:
-                                    move(t,left)
-                                    cell.velocity = 1
+
+            if cell.logic in FLUIDS and operable(t):
+                # check if splashing happens
+                splash_positons = []
+                if random.random() < SPLASH_ODDS:
+                    splash_positons = [up,up_left,up_right]
+                flowable_postions = [[down,down_left,down_right],splash_positons,[left,right]]
+                
+                pos = None # final position to move to
+                fp = [] # free flowable positions
+                
+                # compute availability of free positons
+                for pos_set in flowable_postions:
+                    fp_end = []
+                    for p in pos_set:
+                        if blank(p):
+                            fp_end.append(p)
+                    fp.append(fp_end)
+
+                # pick according to priority
+                double_free = False
+                for pos_set_free in fp:
+                    if len(pos_set_free) != 0:
+                        if left in pos_set_free and right in pos_set_free:
+                            double_free = True
+                        pos = random.choice(pos_set_free)
+                        break
+
+                # if position chosen is opposite velocity
+                if pos == left and double_free and cell.velocity == -1:
+                    pos = right
+                elif pos == right and double_free and cell.velocity == 1:
+                    pos = left
+
+                # reassign velocity
+                if pos == left:
+                    cell.velocity = 1
+                elif pos == right:
+                    cell.velocity = -1
+
+                if not pos == None:
+                    move(t,pos)
             
             elif cell.logic == ROCK and operable(t):
                 primary_supports = [left,right,up]
@@ -243,7 +250,7 @@ def evolve():
                 if ct_prime <= ROCK_PRIME_LIMIT and ct_aux <= ROCK_AUX_LIMIT:
                     if blank(down):
                         move(t,down)
-                    elif get_cell(down).logic == WATER:
+                    elif get_cell(down).logic in FLUIDS:
                         swap(t,down)
             
             elif cell.logic == FIRE and operable(t):
