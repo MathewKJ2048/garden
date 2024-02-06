@@ -261,7 +261,7 @@ def evolve(PAUSED):
                 if not pos == None:
                     move(t,pos)
             
-            elif cell.logic == ROCK and operable(t):
+            if cell.logic == ROCK and operable(t):
                 primary_supports = [left,right,up]
                 auxiliary_supports = [up_left,up_right,down_left,down_right]
                 ct_prime = 0
@@ -278,7 +278,15 @@ def evolve(PAUSED):
                     elif get_cell(down).logic in FLUIDS:
                         swap(t,down)
             
-            elif cell.logic == FIRE and operable(t):
+            if cell.logic == ICE and operable(t):
+                freeze_positions = [up,down,left,right]
+                for pos in freeze_positions:
+                    if get_cell(pos).logic == WATER and operable(pos):
+                        if random.random() < FREEZE_ODDS:
+                            place(pos,Cell(ICE,get_random_skin(ICE)))
+
+
+            if cell.logic == FIRE and operable(t):
                 limit = cell.grade/LIMIT_GRADE_SCALE  # lower grade implies more probability and lower limit
                 cell_new = copy.deepcopy(cell)
                 cell_new.grade = cell.grade+1

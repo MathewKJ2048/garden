@@ -39,6 +39,8 @@ EMBER_FLAMMABILITY_ODDS = 0.1 # higher value -> ignites more often
 
 EMBER_CAPACITY = EMBER_LASTING*EMBER_FLAMMABILITY_ODDS
 
+FREEZE_ODDS = 0.1
+
 BLANK = "BLANK"
 SAND = "SAND"
 WATER = "WATER"
@@ -63,7 +65,7 @@ colors = {
     INERT: [(100,0,100),(150,30,150),(200,50,200)],
     ACID: [(100,255,0)],
     EMBER: [(150,0,0),(160,0,0),(170,0,0)],
-    WOOD: [(222, 184, 135),(165, 91, 83),(91, 39, 11)],
+    WOOD: [(140,70,20),(165, 91, 83),(91, 39, 11)],
     OIL: [(100,100,100)],
     ICE: [(219, 241, 253),(200, 220, 230),(210, 230, 240),(100,230,230)]
 }
