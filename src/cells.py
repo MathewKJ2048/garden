@@ -13,36 +13,44 @@ def invert_gravity():
     global G
     G = -G
 
+
+def get_random_skin(cell_logic):
+    return (random.random()*1000)%len(colors[cell_logic])
+
 class Cell:
-    def __init__(self, logic, skin, grade = 0, velocity=0):
+    def __init__(self, logic, skin = -1, grade = 0, velocity=0):
         self.logic = logic
-        self.skin = skin
+        if skin == -1:
+            self.skin = get_random_skin(logic)
+        else:
+            self.skin = skin
         self.grade = grade
         self.velocity = velocity
 
-PLACEHOLDER = "nothing"
+
 PLACEHOLDER_CELL = Cell(PLACEHOLDER,0)
 BLANK_CELL = Cell(BLANK,0)
 INERT_CELL = Cell(INERT,0)
 FIRE_CORE_CELL = Cell(FIRE,0,0)
 
 
-def get_random_skin(cell_logic):
-    return (random.random()*1000)%len(colors[cell_logic])
 
 def generate(logic, i, j):
     spread = get_spread()
     for I in range(-spread+1, spread):
         for J in range(-spread+1, spread):
-            cell = Cell(logic,get_random_skin(logic))
-            if cell in FLUIDS:
+            cell = Cell(logic)
+            if logic in FLUIDS:
                 cell.velocity =pick_one(1,-1)
+            if logic in FLAMMABLES:
+                cell.grade = HEAT_RESISTANCE[logic]
             if logic == ACID:
                 cell.grade = ACID_STRENGTH
-            elif cell == FIRE:
-                cell.grade = 0
             elif logic == EMBER:
                 cell.grade = EMBER_CAPACITY
+
+            if logic == ROCK and (I+J+2*spread)%2 == 1:
+                continue
 
             if random.random() < SPAWN_ODDS:
                 insert_cell(i+I,j+J,cell)
@@ -88,8 +96,6 @@ def init():
     for i in range(m):
         for j in range(n):
             matrix[i][j] = Cell(BLANK,0)
-
-
 
 
 def evolve(PAUSED):
@@ -219,6 +225,13 @@ def evolve(PAUSED):
                         delete(random.choice(positions))
                         cell.grade = cell.grade-1
 
+            if cell.logic == WATER and operable(t):
+                freeze_positions = [up,down,left,right]
+                for pos in freeze_positions:
+                    if get_cell(pos).logic == ICE:
+                        if random.random() < FREEZE_ODDS:
+                            place(t,Cell(ICE))
+
             if cell.logic in FLUIDS and operable(t):
                 # check if splashing happens
                 splash_positons = []
@@ -277,13 +290,6 @@ def evolve(PAUSED):
                         move(t,down)
                     elif get_cell(down).logic in FLUIDS:
                         swap(t,down)
-            
-            if cell.logic == ICE and operable(t):
-                freeze_positions = [up,down,left,right]
-                for pos in freeze_positions:
-                    if get_cell(pos).logic == WATER and operable(pos):
-                        if random.random() < FREEZE_ODDS:
-                            place(pos,Cell(ICE,get_random_skin(ICE)))
 
 
             if cell.logic == FIRE and operable(t):
@@ -307,6 +313,20 @@ def evolve(PAUSED):
                         move_and_change(t,left,cell_new)
                     elif blank(right):
                         move_and_change(t,right,cell_new)
+                
+                flammable_neighbours = [up,down,left,right,up_right,up_left,down_right,down_left]
+                replacements = {
+                    WOOD: Cell(EMBER,grade=1),
+                    ICE: Cell(WATER,velocity=pick_one(1,-1)),
+                    OIL: FIRE_CORE_CELL
+                }
+                for pos in flammable_neighbours:
+                    fuel = get_cell(pos)
+                    if fuel.logic in FLAMMABLES and operable(pos):
+                        if fuel.grade <= 0:
+                            place(pos,replacements[fuel.logic])
+                        else:
+                            fuel.grade = fuel.grade-1
                 delete(t)
 
         for key in m:
@@ -321,7 +341,7 @@ def evolve(PAUSED):
     to_deactivate = set()
     for t in active_locations:
         log = get_cell(t).logic
-        if log in {PLACEHOLDER,BLANK,INERT}:
+        if log in {PLACEHOLDER,BLANK,INERT,ICE,WOOD}:
             to_deactivate.add(t)
     
     active_locations.difference_update(to_deactivate)

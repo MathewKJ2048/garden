@@ -1,3 +1,15 @@
+BLANK = "BLANK"
+SAND = "SAND"
+WATER = "WATER"
+ROCK = "ROCK"
+FIRE = "FIRE"
+ACID = "ACID"
+EMBER = "EMBER"
+INERT = "INERT"
+WOOD = "WOOD"
+OIL = "OIL"
+ICE = "ICE"
+PLACEHOLDER = "PLACEHOLDER"
 
 window = 1 # quick scaling
 m = int(128 * window) # columns
@@ -35,26 +47,21 @@ ROCK_PRIME_LIMIT = 2    # limit 3
 ACID_STRENGTH = 3 # higher value -> consumes more before disappearing
 
 EMBER_LASTING = 100 # time the ember lasts for
-EMBER_FLAMMABILITY_ODDS = 0.1 # higher value -> ignites more often
-
+EMBER_FLAMMABILITY_ODDS = 0.5 # higher value -> ignites more often
 EMBER_CAPACITY = EMBER_LASTING*EMBER_FLAMMABILITY_ODDS
 
-FREEZE_ODDS = 0.1
+FREEZE_ODDS = 0.03
 
-BLANK = "BLANK"
-SAND = "SAND"
-WATER = "WATER"
-ROCK = "ROCK"
-FIRE = "FIRE"
-ACID = "ACID"
-EMBER = "EMBER"
-INERT = "INERT"
-WOOD = "WOOD"
-OIL = "OIL"
-ICE = "ICE"
-PLACEHOLDER = "PLACEHOLDER"
+HEAT_RESISTANCE = {
+    WOOD: 2,
+    OIL: 0,
+    ICE: 10
+}
 
 FLUIDS = [WATER,OIL,ACID]
+FLAMMABLES = [OIL,WOOD,ICE]
+
+
 
 colors = {
     BLANK: [(0,0,0)],
@@ -83,5 +90,6 @@ CONTROLS = {
     "o":OIL,
     "i":ICE
 }
+
 
 
