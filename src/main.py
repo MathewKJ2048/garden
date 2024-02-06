@@ -5,16 +5,10 @@ from cells import *
 from render import *
 from conf import *
 
-state = None
-
-skin_type = 0
-
 pygame.init()
-
 
 height = m*scale
 width = n*scale
-
 
 screen = pygame.display.set_mode((width, height))
 
@@ -32,44 +26,15 @@ def render_screen(changes):
 def get_mouse_cell(mouse_x, mouse_y):
     return int(mouse_y/scale), int(mouse_x/scale)
 
-def get_random_skin(cell_logic):
-    return (random.random()*1000)%len(colors[cell_logic])
 
+
+state = None
 def process_mouse():
     spread = get_spread()-1
     mouse_x, mouse_y = pygame.mouse.get_pos()
     i, j = get_mouse_cell(mouse_x, mouse_y)
-    for I in range(-spread, spread+1):
-            for J in range(-spread, spread+1):
-                if state == SAND:
-                    if random.random() < SAND_SPAWN_ODDS:
-                        insert_cell(i+I,j+J,Cell(SAND,get_random_skin(SAND)))
-                elif state == BLANK:
-                        insert_cell(i+I,j+J,BLANK_CELL)
-                elif state == WATER:
-                    if random.random() < WATER_SPAWN_ODDS:
-                        insert_cell(i+I, j+J, Cell(WATER,get_random_skin(WATER),velocity=pick_one(1,-1)))
-                elif state == OIL:
-                    if random.random() < OIL_SPAWN_ODDS:
-                        insert_cell(i+I, j+J, Cell(OIL,get_random_skin(OIL),velocity=pick_one(1,-1)))
-                elif state == ACID:
-                    if random.random() < ACID_SPAWN_ODDS:
-                        insert_cell(i+I, j+J, Cell(ACID,get_random_skin(ACID),velocity=pick_one(1,-1),grade=ACID_STRENGTH))
-                elif state == ROCK:
-                    if random.random() < ROCK_SPAWN_ODDS and (I+J+2*spread)%2 == 0:
-                        insert_cell(i+I, j+J, Cell(ROCK,get_random_skin(ROCK)))
-                elif state == FIRE:
-                    if random.random() < FIRE_SPAWN_ODDS and math.sqrt(I**2+J**2)<=spread:
-                        insert_cell(i+I,j+J,FIRE_CORE_CELL)
-                elif state == EMBER:
-                    if random.random() < EMBER_SPAWN_ODDS:
-                        insert_cell(i+I,j+J,Cell(EMBER,get_random_skin(EMBER),grade=EMBER_CAPACITY))
-                elif state == INERT:
-                    insert_cell(i+I,j+J,Cell(INERT,get_random_skin(INERT)))
-                elif state == WOOD:
-                    if random.random() < EMBER_SPAWN_ODDS:
-                        insert_cell(i+I,j+J,Cell(WOOD,get_random_skin(WOOD)))
-
+    if state:
+        generate(state, i, j)
 
 
 init()
@@ -77,6 +42,7 @@ screen.fill(colors[BLANK][0])
 pygame.display.update()
 running = True
 READOUT = False
+PAUSED = False
 
 last_time = 0
 while running:
@@ -84,40 +50,28 @@ while running:
         if event.type == pygame.QUIT:
             running = False
         elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_s:
-                state = SAND
-            if event.key == pygame.K_e:
-                state = EMBER
-            elif event.key == pygame.K_c:
+            if event.key == pygame.K_c:
                 state = None
-            elif event.key == pygame.K_w:
-                state = WATER
-            elif event.key == pygame.K_o:
-                state = OIL
-            elif event.key == pygame.K_a:
-                state = ACID
-            elif event.key == pygame.K_r:
-                state = ROCK
-            elif event.key == pygame.K_b:
-                state = BLANK
-            elif event.key == pygame.K_f:
-                state = FIRE
-            elif event.key == pygame.K_q:
-                state = WOOD
-            elif event.key == pygame.K_i:
-                state = INERT
             elif event.key == pygame.K_g:
                 invert_gravity()
             elif event.key == pygame.K_l:
                 READOUT = True
+            elif event.key == pygame.K_p:
+                PAUSED = not PAUSED
             elif event.unicode.isdigit():
                 set_spread(int(event.unicode))
+            else:
+                inp = pygame.key.name(event.key)
+                if inp in CONTROLS:
+                    state = CONTROLS[inp]
+                else:
+                    print("unrecognized input - "+inp)
         
     process_mouse()
     dt = c.tick(max_frame_rate)
     time = time+dt
     
-    changes = evolve()
+    changes = evolve(PAUSED)
     render_screen(changes)
 
     if READOUT:

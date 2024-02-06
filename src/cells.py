@@ -20,14 +20,37 @@ class Cell:
         self.grade = grade
         self.velocity = velocity
 
-
-
-BLANK_CELL = Cell(BLANK,0)
-WATER_CELL = Cell(WATER,0)
-FIRE_CORE_CELL = Cell(FIRE,0)
+PLACEHOLDER = "nothing"
 PLACEHOLDER_CELL = Cell(PLACEHOLDER,0)
+BLANK_CELL = Cell(BLANK,0)
 INERT_CELL = Cell(INERT,0)
-ACID_CELL = Cell(ACID,0,ACID_STRENGTH)
+FIRE_CORE_CELL = Cell(FIRE,0,0)
+
+
+def get_random_skin(cell_logic):
+    return (random.random()*1000)%len(colors[cell_logic])
+
+def generate(logic, i, j):
+    spread = get_spread()
+    for I in range(-spread+1, spread):
+        for J in range(-spread+1, spread):
+            cell = Cell(logic,get_random_skin(logic))
+            if cell in FLUIDS:
+                cell.velocity =pick_one(1,-1)
+            if logic == ACID:
+                cell.grade = ACID_STRENGTH
+            elif cell == FIRE:
+                cell.grade = 0
+            elif logic == EMBER:
+                cell.grade = EMBER_CAPACITY
+
+            if random.random() < SPAWN_ODDS:
+                insert_cell(i+I,j+J,cell)
+
+def insert_cell(i,j,cell):
+    active_locations.add((i,j))
+    set_cell((i,j),cell)
+
 
 time = 0
 
@@ -67,11 +90,9 @@ def init():
             matrix[i][j] = Cell(BLANK,0)
 
 
-def insert_cell(i,j,cell):
-    active_locations.add((i,j))
-    set_cell((i,j),cell)
 
-def evolve():
+
+def evolve(PAUSED):
 
     global steps
     steps = steps+ 1
@@ -109,7 +130,11 @@ def evolve():
         al = list(active_locations)
         random.shuffle(al)
         for t in al:
+            
             changes.add(t)
+            if PAUSED:
+                continue
+
             i, j = t
             cell = get_cell(t)
             down = (i+G,j)
@@ -283,7 +308,6 @@ def evolve():
 
         m.clear()
         
-
     process()
 
     to_deactivate = set()

@@ -21,7 +21,10 @@ a garden-simulator using cellular automata, written using pygame.
 
 ## To Do:
 
-- oil
+- oil to burn
+- wood to smoulder
+- ice to melt with fire and to freeze water on contact
+- wind
 
 - weeds
 - flowers

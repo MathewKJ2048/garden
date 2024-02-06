@@ -16,16 +16,10 @@ def get_spread():
 
 render_optimization = True
 
-SPLASH_ODDS = 0.2  # odds of water jumping randomly, increasing this too much interferes with viscosity
+SPLASH_ODDS = 0.2  # odds of fluid jumping randomly, increasing this too much interferes with viscosity
 
-SAND_SPAWN_ODDS = 0.5
-WATER_SPAWN_ODDS = 0.5
-ROCK_SPAWN_ODDS = 0.5
-FIRE_SPAWN_ODDS = 0.5
-ACID_SPAWN_ODDS = 0.5
-EMBER_SPAWN_ODDS = 0.5
-WOOD_SPAWN_ODDS = 0.5
-OIL_SPAWN_ODDS = 0.5
+SPAWN_ODDS = 0.5
+
 
 # fire parameters:
 up_correction = 10 # higher value skews flame upwards
@@ -55,6 +49,7 @@ EMBER = "EMBER"
 INERT = "INERT"
 WOOD = "WOOD"
 OIL = "OIL"
+ICE = "ICE"
 PLACEHOLDER = "PLACEHOLDER"
 
 FLUIDS = [WATER,OIL,ACID]
@@ -67,8 +62,24 @@ colors = {
     FIRE: [(250,250,250),(230,220,0),(200,180,0),(234,170,0),(169,67,30)],
     INERT: [(100,0,100),(150,30,150),(200,50,200)],
     ACID: [(100,255,0)],
-    EMBER: [(150,0,0)],
-    WOOD: [(140,70,20)],
-    OIL: [(100,100,100)]
+    EMBER: [(150,0,0),(160,0,0),(170,0,0)],
+    WOOD: [(222, 184, 135),(165, 91, 83),(91, 39, 11)],
+    OIL: [(100,100,100)],
+    ICE: [(219, 241, 253),(200, 220, 230),(210, 230, 240),(100,230,230)]
 }
+
+CONTROLS = {
+    "b" : BLANK,
+    "s" : SAND,
+    "w" : WATER,
+    "r" : ROCK,
+    "f" : FIRE,
+    "v" : INERT,
+    "a" : ACID,
+    "e": EMBER,
+    "q": WOOD,
+    "o":OIL,
+    "i":ICE
+}
+
 
