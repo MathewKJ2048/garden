@@ -58,14 +58,20 @@ while running:
                 READOUT = True
             elif event.key == pygame.K_p:
                 PAUSED = not PAUSED
+                if PAUSED:
+                    print("paused")
+                else:
+                    print("resumed")
             elif event.unicode.isdigit():
                 set_spread(int(event.unicode))
             else:
                 inp = pygame.key.name(event.key)
+                
                 if inp in CONTROLS:
                     state = CONTROLS[inp]
                 else:
                     print("unrecognized input - "+inp)
+            
         
     process_mouse()
     dt = c.tick(max_frame_rate)

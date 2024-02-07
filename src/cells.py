@@ -18,7 +18,7 @@ def get_random_skin(cell_logic):
     return (random.random()*1000)%len(colors[cell_logic])
 
 class Cell:
-    def __init__(self, logic, skin = -1, grade = 0, velocity=0):
+    def __init__(self, logic, skin = -1, grade = 0, velocity=0, organic_grade=0):
         self.logic = logic
         if skin == -1:
             self.skin = get_random_skin(logic)
@@ -26,6 +26,8 @@ class Cell:
             self.skin = skin
         self.grade = grade
         self.velocity = velocity
+        self.organic_grade = organic_grade
+        self.parent = None
 
 PLACEHOLDER = -1
 PLACEHOLDER_CELL = Cell(PLACEHOLDER,0)
@@ -44,6 +46,9 @@ def generate(logic, i, j):
                 cell.velocity =pick_one(1,-1)
             if logic in FLAMMABLES:
                 cell.grade = HEAT_RESISTANCE[logic]
+            if logic in ORGANIC_MATERIAL:
+                cell.grade = HEAT_RESISTANCE[WOOD]
+
             if logic == ACID:
                 cell.grade = ACID_STRENGTH
             elif logic == EMBER:
@@ -52,7 +57,10 @@ def generate(logic, i, j):
             if logic == ROCK and (I+J+2*spread)%2 == 1:
                 continue
 
-            if random.random() < SPAWN_ODDS:
+            if logic == FIRE and (I**2+J**2)**(0.5) > spread:
+                continue
+                
+            if random.random() < SPAWN_ODDS or logic == BLANK:
                 insert_cell(i+I,j+J,cell)
 
 def insert_cell(i,j,cell):
@@ -131,6 +139,17 @@ def evolve(PAUSED):
         return get_modify(t,m).logic == PLACEHOLDER
     def delete(t):
         set_modify(t,m,BLANK_CELL)
+    def grow(t,t_,cell): # move cell in t to t_ and put cell in t
+        c = get_cell(t)
+        cell.parent = c.parent
+        c.parent = (t,cell.logic)
+        move(t,t_)
+        place(t,cell)
+    def mutate(t,cell): # changes what is at t into cell
+        cell.parent = get_cell(t).parent
+        place(t,cell)
+    def has_parent(cell):
+        return cell.parent == None or get_cell(cell.parent[0]).logic == cell.parent[1]
 
     def process():
         al = list(active_locations)
@@ -157,7 +176,10 @@ def evolve(PAUSED):
 
             def ignite(pos):
                 fuel = get_cell(pos)
-                if fuel.logic in FLAMMABLES and operable(pos):
+                log = fuel.logic
+                if log in ORGANIC_MATERIAL:
+                    log = WOOD
+                if log in FLAMMABLES and operable(pos):
                     replacements = {
                         WOOD: Cell(EMBER,grade=GENERATED_EMBER_CAPACITY),
                         ICE: Cell(WATER,velocity=pick_one(1,-1)),
@@ -165,7 +187,7 @@ def evolve(PAUSED):
                         ROCK: Cell(LAVA)
                     }
                     if fuel.grade <=0:
-                        place(pos,replacements[fuel.logic])
+                        place(pos,replacements[log])
                     else:
                         fuel.grade = fuel.grade-1
 
@@ -347,6 +369,63 @@ def evolve(PAUSED):
                     ignite(pos)       
                 delete(t)
 
+            if cell.logic in ORGANIC_MATERIAL and operable(t):
+                if cell.organic_grade == -1:
+                    if blank(down):
+                        move(t,down)
+                    
+
+            if cell.logic == SEED and operable(t):
+                if blank(down):
+                    move(t,down)
+                elif get_cell(down).logic != SAND:
+                    delete(t)
+                else:
+                    if get_cell(up).logic == WATER and operable(up):
+                        delete(up)
+                        plant_c = Cell(GROWER_GRASS)
+                        plant_c.parent = (down,SAND)
+                        place(t, plant_c)
+                    elif get_cell(up).logic not in {SEED,BLANK,PLACEHOLDER} and operable(up): # seed dies if buried in anything else
+                        delete(t)
+            
+            if cell.logic == GROWER_GRASS and operable(t):
+                
+                if cell.organic_grade >= GRASS_HEIGHT:
+                    mutate(t,Cell(BODY_GRASS,skin=cell.skin))
+                else:
+                    growth_positions = [up_left,up_right]
+                    for pos in neighbours: # absorbs all water, kills competition
+                        if get_cell(pos).logic == WATER and operable(t):
+                            delete(pos)
+                        if get_cell(pos).logic == SEED and operable(t):
+                            delete(pos)
+                    gp = []
+                    for pos in growth_positions:
+                        if blank(pos):
+                            gp.append(pos)
+                    if len(gp)!=0:
+                        if random.random() < GRASS_GROWTH_RATE:
+                            assert(cell.skin!=-1)
+                            grow(t,random.choice(gp),Cell(BODY_GRASS,skin=cell.skin))
+                            cell.organic_grade=cell.organic_grade+1
+                
+            
+            if cell.logic == BODY_GRASS:
+                for pos in neighbours: # absorbs all water, kills competition
+                    if get_cell(pos).logic == WATER and operable(t):
+                        delete(pos)
+                    if get_cell(pos).logic == SEED and operable(t):
+                        delete(pos)
+                    if operable(pos) and get_cell(pos).logic == OIL:
+                        cell.organic_grade = -1
+                    
+            
+            if cell.logic in ORGANIC_MATERIAL and operable(t) and not has_parent(cell):
+                place(t,Cell(DEAD_GRASS,organic_grade=-1))
+
+
+
         for key in m:
             t = set_t(key)
             set_cell(t,m[key])
@@ -374,7 +453,7 @@ def get_cell(t):
         assert(i>=0 and j>=0 and i<m and j<n)
         return matrix[i][j]
     except:
-        return INERT_CELL
+        return PLACEHOLDER_CELL
 
 def set_cell(t,cell):
     try:

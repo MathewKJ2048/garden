@@ -1,4 +1,4 @@
-BLANK = 0
+
 SAND = 1
 WATER = 2
 ROCK = 3
@@ -9,8 +9,13 @@ INERT = 7
 WOOD = 8
 OIL = 9
 ICE = 10
-PLANT = 11
 LAVA = 12
+BLANK = 11
+
+DEAD_GRASS = 13
+SEED = 14
+GROWER_GRASS =15
+BODY_GRASS = 16
 
 names = {
     BLANK: "BLANK",
@@ -24,8 +29,11 @@ names = {
     WOOD: "WOOD",
     OIL: "OIL",
     ICE: "ICE",
-    PLANT: "PLANT",
     LAVA: "LAVA",
+    SEED: "SEED",
+    GROWER_GRASS: "GROWER GRASS",
+    BODY_GRASS: "BODY GRASS",
+    DEAD_GRASS: "DEAD GRASS"
 }
 
 window = 0.5 # quick scaling
@@ -67,14 +75,9 @@ EMBER_FLAMMABILITY_ODDS = 0.5 # higher value -> ignites more often
 GENERATED_EMBER_CAPACITY = 5 # how long embers generated from wood lasts
 
 
-FREEZE_ODDS = 0.03
+FREEZE_ODDS = 0.01
 
-HEAT_RESISTANCE = {
-    WOOD: 5,
-    OIL: 0,
-    ICE: 10,
-    ROCK: 20
-}
+
 
 FLUIDS = [WATER,OIL,ACID,LAVA]
 viscosity = {
@@ -84,13 +87,24 @@ viscosity = {
     LAVA: 0.1
 }
 SPLASH_ODDS = {
-    WATER: 0.4,
+    WATER: 0.2,
     OIL: 0.2,
     ACID: 0.2,
     LAVA: 0.05
 }
 
+ORGANIC_MATERIAL = [SEED,GROWER_GRASS,BODY_GRASS,DEAD_GRASS] # treated equivalent to wood 
 FLAMMABLES = [OIL,WOOD,ICE,ROCK]
+
+HEAT_RESISTANCE = {
+    WOOD: 5,
+    OIL: 0,
+    ICE: 10,
+    ROCK: 20
+}
+
+
+
 
 colors = {
     BLANK: [(0,0,0)],
@@ -98,15 +112,23 @@ colors = {
     WATER: [(0,100,250)],
     ROCK: [(200,200,200),(125,125,125),(150,150,150)], 
     FIRE: [(250,250,250),(230,220,0),(200,180,0),(234,170,0),(169,67,30)],
-    INERT: [(100,0,100),(150,30,150),(200,50,200)],
+    INERT: [(100,0,90),(150,30,150),(200,50,200)],
     ACID: [(100,255,0)],
     EMBER: [(150,0,0),(160,0,0),(170,0,0)],
     WOOD: [(140,70,20),(165, 91, 83),(91, 39, 11)],
     OIL: [(100,100,100)],
     ICE: [(219, 241, 253),(200, 220, 230),(210, 230, 240),(100,230,230)],
-    PLANT: [(0,100,0)],
-    LAVA: [(250,0,0)]
+    LAVA: [(250,0,0)],
+
+    # organics
+    SEED: [(150,80,30)],
+    GROWER_GRASS: [(0,100,0),(0,120,0),(0,90,0)],
+    BODY_GRASS: [(0,100,0),(40,120,0),(0,50,10)], # inherit color of grower
+    DEAD_GRASS: [(100,100,0),(90,110,0),(110,90,0)]
 }
+
+GRASS_HEIGHT = 12
+GRASS_GROWTH_RATE = 0.1
 
 CONTROLS = {
     "b" : BLANK,
@@ -120,6 +142,6 @@ CONTROLS = {
     "q": WOOD,
     "o":OIL,
     "i":ICE,
-    "m": PLANT,
+    "m": SEED,
     "l": LAVA
 }

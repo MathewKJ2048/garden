@@ -16,8 +16,10 @@ a garden-simulator using cellular automata, written using pygame.
 `V` - inert material  
 `C` - nothing  
 `B` - erase  
+`L` - lava  
+
+`P` - pause/play
 `G` - flip gravity  
-`L` - lava
 `/` - stats  
 
 
