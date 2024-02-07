@@ -27,7 +27,7 @@ class Cell:
         self.grade = grade
         self.velocity = velocity
 
-
+PLACEHOLDER = -1
 PLACEHOLDER_CELL = Cell(PLACEHOLDER,0)
 BLANK_CELL = Cell(BLANK,0)
 INERT_CELL = Cell(INERT,0)
@@ -152,6 +152,24 @@ def evolve(PAUSED):
             up_right = (i-G,j+1)
             up_left = (i-G,j-1)
             
+            neighbours = [up,up_left,up_right,left,right,down,down_left,down_right]
+            neighbours_close = [up,down,left,right]
+
+            def ignite(pos):
+                fuel = get_cell(pos)
+                if fuel.logic in FLAMMABLES and operable(pos):
+                    replacements = {
+                        WOOD: Cell(EMBER,grade=GENERATED_EMBER_CAPACITY),
+                        ICE: Cell(WATER,velocity=pick_one(1,-1)),
+                        OIL: FIRE_CORE_CELL,
+                        ROCK: Cell(LAVA)
+                    }
+                    if fuel.grade <=0:
+                        place(pos,replacements[fuel.logic])
+                    else:
+                        fuel.grade = fuel.grade-1
+
+
             if cell.logic == SAND and operable(t):
                 if blank(down):
                     move(t,down)
@@ -168,6 +186,7 @@ def evolve(PAUSED):
                 if cell.grade <= 0:
                     delete(t)
                 else:
+                    cell.grade = cell.grade-1
                     if blank(down):
                         move(t,down)
                     elif blank(down_left) and blank(down_right):
@@ -179,14 +198,12 @@ def evolve(PAUSED):
                     elif get_cell(down).logic in FLUIDS:
                         swap(t,down)
                     if random.random() < EMBER_FLAMMABILITY_ODDS:
-                        action_positions = {up,down,left,right}
                         positions = []
-                        for pos in action_positions:
+                        for pos in neighbours_close:
                             if blank(pos):
                                 positions.append(pos)
                         if len(positions) != 0:
                             place(random.choice(positions),FIRE_CORE_CELL)
-                            cell.grade = cell.grade - 1
                 
             if cell.logic == OIL and operable(t):
                 swappable_postions = [up,up_left,up_right]
@@ -215,19 +232,28 @@ def evolve(PAUSED):
                 if cell.grade == 0:
                     delete(t)
                 else:
-                    immune = {INERT,ACID,BLANK}
-                    action_directions = [up,down,left,right]
                     positions = []
-                    for pos in action_directions:
-                        if not get_cell(pos).logic in immune and operable(pos):
+                    for pos in neighbours_close:
+                        if not get_cell(pos).logic in immune_acid and operable(pos):
                             positions.append(pos)
                     if len(positions) != 0:
                         delete(random.choice(positions))
                         cell.grade = cell.grade-1
+            
+            if cell.logic == LAVA and operable(t):
+                for pos in neighbours_close:
+                    if operable(pos) and get_cell(pos).logic == WATER:
+                        place(t,Cell(ROCK))
+                        delete(pos)
+                        break
+                if operable(t):
+                    for pos in neighbours:
+                        fuel = get_cell(pos)
+                        if fuel.logic != ROCK:
+                            ignite(pos)
 
             if cell.logic == WATER and operable(t):
-                freeze_positions = [up,down,left,right]
-                for pos in freeze_positions:
+                for pos in neighbours_close:
                     if get_cell(pos).logic == ICE:
                         if random.random() < FREEZE_ODDS:
                             place(t,Cell(ICE))
@@ -235,9 +261,12 @@ def evolve(PAUSED):
             if cell.logic in FLUIDS and operable(t):
                 # check if splashing happens
                 splash_positons = []
-                if random.random() < SPLASH_ODDS:
+                side_flow_postions = []
+                if random.random() < viscosity[cell.logic]:
+                    side_flow_postions = [left,right]
+                if random.random() < SPLASH_ODDS[cell.logic]:
                     splash_positons = [up,up_left,up_right]
-                flowable_postions = [[down,down_left,down_right],splash_positons,[left,right]]
+                flowable_postions = [[down,down_left,down_right],splash_positons,side_flow_postions]
                 
                 pos = None # final position to move to
                 fp = [] # free flowable positions
@@ -314,19 +343,8 @@ def evolve(PAUSED):
                     elif blank(right):
                         move_and_change(t,right,cell_new)
                 
-                flammable_neighbours = [up,down,left,right,up_right,up_left,down_right,down_left]
-                replacements = {
-                    WOOD: Cell(EMBER,grade=1),
-                    ICE: Cell(WATER,velocity=pick_one(1,-1)),
-                    OIL: FIRE_CORE_CELL
-                }
-                for pos in flammable_neighbours:
-                    fuel = get_cell(pos)
-                    if fuel.logic in FLAMMABLES and operable(pos):
-                        if fuel.grade <= 0:
-                            place(pos,replacements[fuel.logic])
-                        else:
-                            fuel.grade = fuel.grade-1
+                for pos in neighbours:
+                    ignite(pos)       
                 delete(t)
 
         for key in m:

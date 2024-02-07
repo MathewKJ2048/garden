@@ -17,11 +17,12 @@ a garden-simulator using cellular automata, written using pygame.
 `C` - nothing  
 `B` - erase  
 `G` - flip gravity  
-`L` - stats  
+`L` - lava
+`/` - stats  
 
 
 ## To Do:
-
+[]
 - wind
 
 - weeds

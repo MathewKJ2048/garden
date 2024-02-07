@@ -54,7 +54,7 @@ while running:
                 state = None
             elif event.key == pygame.K_g:
                 invert_gravity()
-            elif event.key == pygame.K_l:
+            elif event.key == pygame.K_SLASH:
                 READOUT = True
             elif event.key == pygame.K_p:
                 PAUSED = not PAUSED
@@ -83,14 +83,15 @@ while running:
         debug = {}
         for i in range(m):
             for j in range(n):
-                if not matrix[i][j].logic in debug:
-                    debug[matrix[i][j].logic] = 1
+                name = names[matrix[i][j].logic]
+                if not name in debug:
+                    debug[name] = 1
                 else:
-                    debug[matrix[i][j].logic] = debug[matrix[i][j].logic] + 1
+                    debug[name] = debug[name] + 1
         print("cell types:\t\t"+str(debug))
         active_debug = {}
         for t in active_locations:
-            log = get_cell(t).logic
+            log = names[get_cell(t).logic]
             if not log in active_debug:
                 active_debug[log] = 1
             else:

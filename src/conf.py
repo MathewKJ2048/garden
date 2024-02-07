@@ -1,20 +1,37 @@
-BLANK = "BLANK"
-SAND = "SAND"
-WATER = "WATER"
-ROCK = "ROCK"
-FIRE = "FIRE"
-ACID = "ACID"
-EMBER = "EMBER"
-INERT = "INERT"
-WOOD = "WOOD"
-OIL = "OIL"
-ICE = "ICE"
-PLACEHOLDER = "PLACEHOLDER"
+BLANK = 0
+SAND = 1
+WATER = 2
+ROCK = 3
+FIRE = 4
+ACID = 5
+EMBER = 6
+INERT = 7
+WOOD = 8
+OIL = 9
+ICE = 10
+PLANT = 11
+LAVA = 12
 
-window = 1 # quick scaling
+names = {
+    BLANK: "BLANK",
+    SAND: "SAND",
+    WATER: "WATER",
+    ROCK: "ROCK",
+    FIRE: "FIRE",
+    ACID: "ACID",
+    EMBER: "EMBER",
+    INERT: "INERT",
+    WOOD: "WOOD",
+    OIL: "OIL",
+    ICE: "ICE",
+    PLANT: "PLANT",
+    LAVA: "LAVA",
+}
+
+window = 0.5 # quick scaling
 m = int(128 * window) # columns
 n = int(256 * window) # rows
-scale = 4 # number of pixels per automaton
+scale = 5 # number of pixels per automaton
 
 max_frame_rate = 60
 
@@ -27,8 +44,6 @@ def get_spread():
     return spread
 
 render_optimization = True
-
-SPLASH_ODDS = 0.2  # odds of fluid jumping randomly, increasing this too much interferes with viscosity
 
 SPAWN_ODDS = 0.5
 
@@ -45,23 +60,37 @@ ROCK_PRIME_LIMIT = 2    # limit 3
 # higher these numbers, harder the rock
 
 ACID_STRENGTH = 3 # higher value -> consumes more before disappearing
+immune_acid = {INERT,ACID,BLANK}
 
-EMBER_LASTING = 100 # time the ember lasts for
+EMBER_CAPACITY = 50 # time the ember lasts for
 EMBER_FLAMMABILITY_ODDS = 0.5 # higher value -> ignites more often
-EMBER_CAPACITY = EMBER_LASTING*EMBER_FLAMMABILITY_ODDS
+GENERATED_EMBER_CAPACITY = 5 # how long embers generated from wood lasts
+
 
 FREEZE_ODDS = 0.03
 
 HEAT_RESISTANCE = {
-    WOOD: 2,
+    WOOD: 5,
     OIL: 0,
-    ICE: 10
+    ICE: 10,
+    ROCK: 20
 }
 
-FLUIDS = [WATER,OIL,ACID]
-FLAMMABLES = [OIL,WOOD,ICE]
+FLUIDS = [WATER,OIL,ACID,LAVA]
+viscosity = {
+    WATER: 1,
+    OIL: 1,
+    ACID: 1,
+    LAVA: 0.1
+}
+SPLASH_ODDS = {
+    WATER: 0.4,
+    OIL: 0.2,
+    ACID: 0.2,
+    LAVA: 0.05
+}
 
-
+FLAMMABLES = [OIL,WOOD,ICE,ROCK]
 
 colors = {
     BLANK: [(0,0,0)],
@@ -74,7 +103,9 @@ colors = {
     EMBER: [(150,0,0),(160,0,0),(170,0,0)],
     WOOD: [(140,70,20),(165, 91, 83),(91, 39, 11)],
     OIL: [(100,100,100)],
-    ICE: [(219, 241, 253),(200, 220, 230),(210, 230, 240),(100,230,230)]
+    ICE: [(219, 241, 253),(200, 220, 230),(210, 230, 240),(100,230,230)],
+    PLANT: [(0,100,0)],
+    LAVA: [(250,0,0)]
 }
 
 CONTROLS = {
@@ -88,8 +119,7 @@ CONTROLS = {
     "e": EMBER,
     "q": WOOD,
     "o":OIL,
-    "i":ICE
+    "i":ICE,
+    "m": PLANT,
+    "l": LAVA
 }
-
-
-
