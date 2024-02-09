@@ -36,7 +36,7 @@ names = {
     DEAD_GRASS: "DEAD GRASS"
 }
 
-window = 0.5 # quick scaling
+window = 0.4 # quick scaling
 m = int(128 * window) # columns
 n = int(256 * window) # rows
 scale = 5 # number of pixels per automaton

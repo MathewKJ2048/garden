@@ -17,10 +17,13 @@ a garden-simulator using cellular automata, written using pygame.
 `C` - nothing  
 `B` - erase  
 `L` - lava  
+`M` - seeds
 
 `P` - pause/play
 `G` - flip gravity  
 `/` - stats  
+
+Seeds must be added on top of sand and watered to grow
 
 
 ## To Do:

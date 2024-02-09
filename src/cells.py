@@ -67,9 +67,6 @@ def insert_cell(i,j,cell):
     active_locations.add((i,j))
     set_cell((i,j),cell)
 
-
-time = 0
-
 matrix = [None]*m
 for i in range(m):
     matrix[i] = [None]*n
@@ -394,7 +391,7 @@ def evolve(PAUSED):
                 if cell.organic_grade >= GRASS_HEIGHT:
                     mutate(t,Cell(BODY_GRASS,skin=cell.skin))
                 else:
-                    growth_positions = [up_left,up_right]
+                    growth_positions = [up_left,up_right,up]
                     for pos in neighbours: # absorbs all water, kills competition
                         if get_cell(pos).logic == WATER and operable(t):
                             delete(pos)
