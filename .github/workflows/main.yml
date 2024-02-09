@@ -22,9 +22,22 @@ jobs:
           ref: web-app
           path: "./web-app/"
         
+      - name: install pygbag
+        run: |
+          pip install pygbag
+
+      - name: make web app
+        run: |
+          cd ./main
+          make build
+
+      - name: edit web-app
+        run: |
+          rm -rf ./web-app/*
+
+
       - name: test
         run: |
-          cd .
           ls -R
 
       
