@@ -23,4 +23,4 @@ jobs:
           
       - name: Copy build files to webapp branch
         run: |
-          git checkout branch -a
+          git branch -a
