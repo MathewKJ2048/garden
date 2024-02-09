@@ -12,26 +12,14 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-
-      - name: Install pygbag
-        run: |
-          pip install pygbag
-          
-      - name: Configure Git
-        run: |
-          git config --global user.email "actions@github.com"
-          git config --global user.name "GitHub Actions"
+        with:
+          branch: main
         
       - name: build
         run: |
+          pip install pygbag
           make build
+          cd .
+          ls
 
-      - name: commit
-        run: |
-          git add .
-          git commit -m "web-app build"
-          
-      - name: Push changes
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+      
