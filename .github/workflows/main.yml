@@ -24,10 +24,10 @@ jobs:
       - name: Copy build files to webapp branch
         run: |
           git checkout main
-          git checkout webapp
+          git checkout web-app
           git rm -r .
           git checkout main -- src/build
           mv src/build/* .
           git add .
-          git commit -m "Update webapp"
-          git push origin webapp
+          git commit -m "Update web-app"
+          git push origin web-app
