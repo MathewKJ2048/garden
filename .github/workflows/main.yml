@@ -34,6 +34,7 @@ jobs:
       - name: edit web-app
         run: |
           rm -rf ./web-app/*
+          cp -r ./main/src/build/web/* ./web-app/
 
 
       - name: test
