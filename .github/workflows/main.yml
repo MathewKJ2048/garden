@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - main  # Adjust according to your default branch
-  permissions:
-    contents: write
 
 jobs:
   build_and_push:
