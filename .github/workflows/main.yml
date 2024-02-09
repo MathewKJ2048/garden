@@ -22,10 +22,8 @@ jobs:
           ref: web-app
           path: "./web-app/"
         
-      - name: build
+      - name: test
         run: |
-          pip install pygbag
-          make build
           cd .
           ls -R
 
