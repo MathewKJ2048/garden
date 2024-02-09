@@ -46,6 +46,6 @@ jobs:
       - name: push to repo
         run: |
           cd ./web-app
-          git push
+          git push      
 
       
