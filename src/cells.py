@@ -29,7 +29,7 @@ class Cell:
         self.organic_grade = organic_grade
         self.parent = None
 
-PLACEHOLDER = -1
+
 PLACEHOLDER_CELL = Cell(PLACEHOLDER,0)
 BLANK_CELL = Cell(BLANK,0)
 INERT_CELL = Cell(INERT,0)
@@ -393,7 +393,7 @@ def evolve(PAUSED):
                 else:
                     growth_positions = [up_left,up_right,up]
                     for pos in neighbours: # absorbs all water, kills competition
-                        if get_cell(pos).logic == WATER and operable(t):
+                        if get_cell(pos).logic == WATER and operable(t) and random.random() < WATER_ABSORPTION_ODDS:
                             delete(pos)
                         if get_cell(pos).logic == SEED and operable(t):
                             delete(pos)
@@ -410,7 +410,7 @@ def evolve(PAUSED):
             
             if cell.logic == BODY_GRASS:
                 for pos in neighbours: # absorbs all water, kills competition
-                    if get_cell(pos).logic == WATER and operable(t):
+                    if get_cell(pos).logic == WATER and operable(t) and random.random() < WATER_ABSORPTION_ODDS:
                         delete(pos)
                     if get_cell(pos).logic == SEED and operable(t):
                         delete(pos)

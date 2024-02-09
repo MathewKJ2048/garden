@@ -1,6 +1,7 @@
-
-SAND = 1
-WATER = 2
+PLACEHOLDER = -1 # cells which make up the area outside the visible region
+# 0 avoided since it is used for error detection
+SAND = 1    
+WATER = 2  
 ROCK = 3
 FIRE = 4
 ACID = 5
@@ -68,7 +69,7 @@ ROCK_PRIME_LIMIT = 2    # limit 3
 # higher these numbers, harder the rock
 
 ACID_STRENGTH = 3 # higher value -> consumes more before disappearing
-immune_acid = {INERT,ACID,BLANK}
+immune_acid = {INERT,ACID,BLANK,PLACEHOLDER}
 
 EMBER_CAPACITY = 50 # time the ember lasts for
 EMBER_FLAMMABILITY_ODDS = 0.5 # higher value -> ignites more often
@@ -133,6 +134,7 @@ for x in inheritances:
 
 GRASS_HEIGHT = 12
 GRASS_GROWTH_RATE = 0.1
+WATER_ABSORPTION_ODDS = 0.01
 
 CONTROLS = {
     "b" : BLANK,
