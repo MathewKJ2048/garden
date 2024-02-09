@@ -33,6 +33,9 @@ jobs:
 
       - name: edit web-app
         run: |
+          cd ./web-app
+          git config --global user.email "web-app@github.com"
+          git config --global user.name "web-app-generator"
           rm -rf ./web-app/*
           cp -r ./main/src/build/web/* ./web-app/
           cd ./web-app/
@@ -41,8 +44,6 @@ jobs:
 
       - name: push to repo
         run: |
-          git config --global user.email "web-app@github.com"
-          git config --global user.name "web-app-generator"
           git push https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
 
       
