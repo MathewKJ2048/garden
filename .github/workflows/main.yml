@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main  # Adjust according to your default branch
+  permissions:
+    contents: write
 
 jobs:
   build_and_push:
@@ -11,13 +13,13 @@ jobs:
     
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           ref: main
           path: "./main/"
       
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           ref: web-app
           path: "./web-app/"
@@ -35,10 +37,14 @@ jobs:
         run: |
           rm -rf ./web-app/*
           cp -r ./main/src/build/web/* ./web-app/
+          cd ./web-app/
+          git add .
+          git commit -m "built web-app"
 
-
-      - name: test
+      - name: push to repo
         run: |
-          ls -R
+          git config --global user.email "web-app@github.com"
+          git config --global user.name "web-app-generator"
+          git push https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
 
       
