@@ -45,6 +45,6 @@ jobs:
 
       - name: push to repo
         run: |
-          git push https://github.com/${{ github.repository }}
+          git push
 
       
