@@ -1,31 +1,29 @@
-name: Build and Publish with GitHub Pages
+name: Build and Push Webapp
 
 on:
   push:
     branches:
-      - main
+      - main  # Adjust according to your default branch
 
 jobs:
-  build-and-publish:
+  build_and_push:
     runs-on: ubuntu-latest
     
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v2
-
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.x
-
-    - name: Install pygbag
-      run: pip install pygbag
-
-    - name: Build with pygbag
-      run: make build
-
-    - name: Publish to GitHub Pages
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./src/build
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        
+      - name: Install dependencies and build
+        run: |
+          make build
+          
+      - name: Copy build files to webapp branch
+        run: |
+          git checkout main
+          git checkout webapp
+          git rm -r .
+          git checkout main -- src/build
+          mv src/build/* .
+          git add .
+          git commit -m "Update webapp"
+          git push origin webapp
