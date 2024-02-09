@@ -50,7 +50,7 @@ def generate(logic, i, j):
                 cell.grade = HEAT_RESISTANCE[WOOD]
 
             if logic == ACID:
-                cell.grade = ACID_STRENGTH
+                cell.grade = ACID_CAPACITY
             elif logic == EMBER:
                 cell.grade = EMBER_CAPACITY
 
@@ -255,7 +255,7 @@ def evolve(PAUSED):
                     for pos in neighbours_close:
                         if not get_cell(pos).logic in immune_acid and operable(pos):
                             positions.append(pos)
-                    if len(positions) != 0:
+                    if len(positions) != 0 and random.random() < ACID_ACTION_ODDS:
                         delete(random.choice(positions))
                         cell.grade = cell.grade-1
             

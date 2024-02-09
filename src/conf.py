@@ -68,7 +68,8 @@ ROCK_AUX_LIMIT = 2      # limit 4
 ROCK_PRIME_LIMIT = 2    # limit 3
 # higher these numbers, harder the rock
 
-ACID_STRENGTH = 3 # higher value -> consumes more before disappearing
+ACID_CAPACITY = 3 # higher value -> consumes more before disappearing
+ACID_ACTION_ODDS = 0.1 # higher value -> more likely to consume cells
 immune_acid = {INERT,ACID,BLANK,PLACEHOLDER}
 
 EMBER_CAPACITY = 50 # time the ember lasts for
