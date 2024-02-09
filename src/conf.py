@@ -122,10 +122,14 @@ colors = {
 
     # organics
     SEED: [(150,80,30)],
-    GROWER_GRASS: [(0,100,0),(0,120,0),(0,90,0)],
-    BODY_GRASS: [(0,100,0),(40,120,0),(0,50,10)], # inherit color of grower
+    GROWER_GRASS: [(0,100,0),(40,120,0),(0,50,10)],
     DEAD_GRASS: [(100,100,0),(90,110,0),(110,90,0)]
 }
+inheritances = {
+    BODY_GRASS: GROWER_GRASS
+}
+for x in inheritances:
+    colors[x] = colors[inheritances[x]]
 
 GRASS_HEIGHT = 12
 GRASS_GROWTH_RATE = 0.1
