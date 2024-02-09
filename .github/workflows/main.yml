@@ -1,0 +1,33 @@
+name: Build and Publish with GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.x
+
+    - name: Install pygbag
+      run: pip install pygbag
+
+    - name: Build with pygbag
+      run: |
+        cd src
+        pygbag --build .
+
+    - name: Publish to GitHub Pages
+      uses: actions/github-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./src/build
