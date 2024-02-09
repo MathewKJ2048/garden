@@ -17,10 +17,13 @@ jobs:
         run: |
           pip install pygbag
         
-      - name: Install dependencies and build
+      - name: build and commit
         run: |
           make build
+          git add .
+          git commit -m "web-app build"
           
-      - name: Copy build files to webapp branch
-        run: |
-          git branch -a
+      - name: Push changes
+        uses: ad-m/github-push-action@main
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
