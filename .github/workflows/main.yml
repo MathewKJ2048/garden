@@ -13,13 +13,20 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
         with:
-          branch: main
+          ref: main
+          path: "./main/"
+      
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          ref: web-app
+          path: "./web-app/"
         
       - name: build
         run: |
           pip install pygbag
           make build
           cd .
-          ls
+          ls -R
 
       
