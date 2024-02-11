@@ -60,7 +60,7 @@ def generate(logic, i, j):
             if logic == FIRE and (I**2+J**2)**(0.5) > spread:
                 continue
                 
-            if random.random() < SPAWN_ODDS or logic == BLANK:
+            if event(SPAWN_ODDS) or logic == BLANK:
                 insert_cell(i+I,j+J,cell)
 
 def insert_cell(i,j,cell):
@@ -112,7 +112,6 @@ def evolve(PAUSED):
     changes = set()
 
     def blank(t):
-        unconserved = {BLANK,FIRE}
         logic_now = get_cell(t).logic
         logic_next = get_modify(t,m).logic
         return logic_now in unconserved and logic_next == PLACEHOLDER or logic_next in unconserved
@@ -216,7 +215,7 @@ def evolve(PAUSED):
                         move(t,down_right)
                     elif get_cell(down).logic in FLUIDS:
                         swap(t,down)
-                    if random.random() < EMBER_FLAMMABILITY_ODDS:
+                    if event(EMBER_FLAMMABILITY_ODDS):
                         positions = []
                         for pos in neighbours_close:
                             if blank(pos):
@@ -255,7 +254,7 @@ def evolve(PAUSED):
                     for pos in neighbours_close:
                         if not get_cell(pos).logic in immune_acid and operable(pos):
                             positions.append(pos)
-                    if len(positions) != 0 and random.random() < ACID_ACTION_ODDS:
+                    if len(positions) != 0 and event(ACID_ACTION_ODDS):
                         delete(random.choice(positions))
                         cell.grade = cell.grade-1
             
@@ -274,16 +273,16 @@ def evolve(PAUSED):
             if cell.logic == WATER and operable(t):
                 for pos in neighbours_close:
                     if get_cell(pos).logic == ICE:
-                        if random.random() < FREEZE_ODDS:
+                        if event(FREEZE_ODDS):
                             place(t,Cell(ICE))
 
             if cell.logic in FLUIDS and operable(t):
                 # check if splashing happens
                 splash_positons = []
                 side_flow_postions = []
-                if random.random() < viscosity[cell.logic]:
+                if event(viscosity[cell.logic]):
                     side_flow_postions = [left,right]
-                if random.random() < SPLASH_ODDS[cell.logic]:
+                if event(SPLASH_ODDS[cell.logic]):
                     splash_positons = [up,up_left,up_right]
                 flowable_postions = [[down,down_left,down_right],splash_positons,side_flow_postions]
                 
@@ -393,7 +392,7 @@ def evolve(PAUSED):
                 else:
                     growth_positions = [up_left,up_right,up]
                     for pos in neighbours: # absorbs all water, kills competition
-                        if get_cell(pos).logic == WATER and operable(t) and random.random() < WATER_ABSORPTION_ODDS:
+                        if get_cell(pos).logic == WATER and operable(t) and event(WATER_ABSORPTION_ODDS):
                             delete(pos)
                         if get_cell(pos).logic == SEED and operable(t):
                             delete(pos)
@@ -402,7 +401,7 @@ def evolve(PAUSED):
                         if blank(pos):
                             gp.append(pos)
                     if len(gp)!=0:
-                        if random.random() < GRASS_GROWTH_RATE:
+                        if event(GRASS_GROWTH_RATE):
                             assert(cell.skin!=-1)
                             grow(t,random.choice(gp),Cell(BODY_GRASS,skin=cell.skin))
                             cell.organic_grade=cell.organic_grade+1
@@ -410,7 +409,7 @@ def evolve(PAUSED):
             
             if cell.logic == BODY_GRASS:
                 for pos in neighbours: # absorbs all water, kills competition
-                    if get_cell(pos).logic == WATER and operable(t) and random.random() < WATER_ABSORPTION_ODDS:
+                    if get_cell(pos).logic == WATER and operable(t) and event(WATER_ABSORPTION_ODDS):
                         delete(pos)
                     if get_cell(pos).logic == SEED and operable(t):
                         delete(pos)
@@ -420,6 +419,27 @@ def evolve(PAUSED):
             
             if cell.logic in ORGANIC_MATERIAL and operable(t) and not has_parent(cell):
                 place(t,Cell(DEAD_GRASS,organic_grade=-1))
+            
+            if cell.logic == GROWER_LIGHTNING and operable(t):
+                growth = []
+                for pos in {down_left,down_right}:
+                    if blank(pos) and get_cell(pos).logic != BODY_LIGHTNING:
+                        growth.append(pos)
+                if len(growth)!=0:
+                    grow(t,random.choice(growth),Cell(BODY_LIGHTNING))
+                else:
+                    delete(t)
+                
+            if cell.logic == BODY_LIGHTNING and operable(t):
+                if cell.grade == LIGHTNING_LIFETIME:
+                    delete(t)
+                else:
+                    cell.grade = cell.grade+1
+
+            if cell.logic in LIGHTNING:
+                for pos in neighbours:
+                    ignite(pos)
+
 
 
 
@@ -467,3 +487,6 @@ def pick_one(a,b):
     if cointoss() < 0.5:
         return a
     return b
+
+def event(odds):
+    return random.random() < odds

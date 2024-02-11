@@ -18,6 +18,11 @@ SEED = 14
 GROWER_GRASS =15
 BODY_GRASS = 16
 
+GROWER_LIGHTNING = 17
+BODY_LIGHTNING = 18
+LIGHTNING = {GROWER_LIGHTNING,BODY_LIGHTNING}
+
+
 names = {
     BLANK: "BLANK",
     SAND: "SAND",
@@ -34,10 +39,12 @@ names = {
     SEED: "SEED",
     GROWER_GRASS: "GROWER GRASS",
     BODY_GRASS: "BODY GRASS",
-    DEAD_GRASS: "DEAD GRASS"
+    DEAD_GRASS: "DEAD GRASS",
+    GROWER_LIGHTNING: "GROWER LIGHTNING",
+    BODY_LIGHTNING: "BODY LIGHTNING"
 }
 
-window = 0.4 # quick scaling
+window = 0.5 # quick scaling
 m = int(128 * window) # columns
 n = int(256 * window) # rows
 scale = 5 # number of pixels per automaton
@@ -79,6 +86,11 @@ GENERATED_EMBER_CAPACITY = 5 # how long embers generated from wood lasts
 
 FREEZE_ODDS = 0.01
 
+unconserved = {BLANK,FIRE}
+def set_unconserved(list_cells):
+    for x in list_cells:
+        unconserved.add(x)
+set_unconserved(LIGHTNING)
 
 
 FLUIDS = [WATER,OIL,ACID,LAVA]
@@ -105,7 +117,7 @@ HEAT_RESISTANCE = {
     ROCK: 20
 }
 
-
+LIGHTNING_LIFETIME = 16
 
 
 colors = {
@@ -122,13 +134,17 @@ colors = {
     ICE: [(219, 241, 253),(200, 220, 230),(210, 230, 240),(100,230,230)],
     LAVA: [(250,0,0)],
 
+    # lightning
+    GROWER_LIGHTNING : [(255,255,255)],
+
     # organics
     SEED: [(150,80,30)],
     GROWER_GRASS: [(0,100,0),(40,120,0),(0,50,10)],
     DEAD_GRASS: [(100,100,0),(90,110,0),(110,90,0)]
 }
 inheritances = {
-    BODY_GRASS: GROWER_GRASS
+    BODY_GRASS: GROWER_GRASS,
+    BODY_LIGHTNING: GROWER_LIGHTNING
 }
 for x in inheritances:
     colors[x] = colors[inheritances[x]]
@@ -150,5 +166,6 @@ CONTROLS = {
     "o": OIL,
     "i": ICE,
     "m": SEED,
-    "l": LAVA
+    "l": LAVA,
+    'e': GROWER_LIGHTNING
 }
