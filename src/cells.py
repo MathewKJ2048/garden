@@ -419,6 +419,10 @@ def evolve(PAUSED):
             
             if cell.logic in ORGANIC_MATERIAL and operable(t) and not has_parent(cell):
                 place(t,Cell(DEAD_GRASS,organic_grade=-1))
+
+            if cell.logic in LIGHTNING:
+                for pos in neighbours:
+                    ignite(pos)
             
             if cell.logic == GROWER_LIGHTNING and operable(t):
                 growth = []
@@ -428,7 +432,7 @@ def evolve(PAUSED):
                 if len(growth)!=0:
                     grow(t,random.choice(growth),Cell(BODY_LIGHTNING))
                 else:
-                    delete(t)
+                    place(t, Cell(BODY_LIGHTNING))
                 
             if cell.logic == BODY_LIGHTNING and operable(t):
                 if cell.grade == LIGHTNING_LIFETIME:
@@ -436,9 +440,7 @@ def evolve(PAUSED):
                 else:
                     cell.grade = cell.grade+1
 
-            if cell.logic in LIGHTNING:
-                for pos in neighbours:
-                    ignite(pos)
+            
 
 
 
