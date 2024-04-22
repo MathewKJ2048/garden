@@ -13,6 +13,7 @@ ICE = 10
 LAVA = 12
 BLANK = 11
 
+
 DEAD_GRASS = 13
 SEED = 14
 GROWER_GRASS =15
@@ -21,6 +22,8 @@ BODY_GRASS = 16
 GROWER_LIGHTNING = 17
 BODY_LIGHTNING = 18
 LIGHTNING = {GROWER_LIGHTNING,BODY_LIGHTNING}
+
+CLONER = 19
 
 
 names = {
@@ -41,7 +44,8 @@ names = {
     BODY_GRASS: "BODY GRASS",
     DEAD_GRASS: "DEAD GRASS",
     GROWER_LIGHTNING: "GROWER LIGHTNING",
-    BODY_LIGHTNING: "BODY LIGHTNING"
+    BODY_LIGHTNING: "BODY LIGHTNING",
+    CLONER: "CLONER"
 }
 
 window = 0.5 # quick scaling
@@ -77,7 +81,7 @@ ROCK_PRIME_LIMIT = 2    # limit 3
 
 ACID_CAPACITY = 3 # higher value -> consumes more before disappearing
 ACID_ACTION_ODDS = 0.1 # higher value -> more likely to consume cells
-immune_acid = {INERT,ACID,BLANK,PLACEHOLDER}
+immune_acid = {INERT,ACID,BLANK,PLACEHOLDER,CLONER}
 
 EMBER_CAPACITY = 50 # time the ember lasts for
 EMBER_FLAMMABILITY_ODDS = 0.5 # higher value -> ignites more often
@@ -133,6 +137,7 @@ colors = {
     OIL: [(100,100,100)],
     ICE: [(219, 241, 253),(200, 220, 230),(210, 230, 240),(100,230,230)],
     LAVA: [(250,0,0)],
+    CLONER: [(200,200,200)],
 
     # lightning
     GROWER_LIGHTNING : [(255,255,255)],
@@ -167,5 +172,6 @@ CONTROLS = {
     "i": ICE,
     "m": SEED,
     "l": LAVA,
-    'e': GROWER_LIGHTNING
+    'e': GROWER_LIGHTNING,
+    'd': CLONER
 }

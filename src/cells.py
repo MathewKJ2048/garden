@@ -440,6 +440,18 @@ def evolve(PAUSED):
                 else:
                     cell.grade = cell.grade+1
 
+            if cell.logic == CLONER and operable(t):
+                spawn = None
+                for pos in neighbours:
+                    if get_cell(pos).logic != BLANK and get_cell(pos).logic != CLONER:
+                        spawn = Cell(get_cell(pos).logic)
+                if spawn:
+                    for pos in neighbours:
+                        if blank(pos) and operable(pos):
+                            place(pos,spawn)
+
+
+
             
 
 
