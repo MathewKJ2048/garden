@@ -35,24 +35,26 @@ BLANK_CELL = Cell(BLANK,0)
 INERT_CELL = Cell(INERT,0)
 FIRE_CORE_CELL = Cell(FIRE,0,0)
 
+def init_cell(logic):
+    cell = Cell(logic)
+    if logic in FLUIDS:
+        cell.velocity =pick_one(1,-1)
+    if logic in FLAMMABLES:
+        cell.grade = HEAT_RESISTANCE[logic]
+    if logic in ORGANIC_MATERIAL:
+        cell.grade = HEAT_RESISTANCE[WOOD]
 
+    if logic == ACID:
+        cell.grade = ACID_CAPACITY
+    elif logic == EMBER:
+        cell.grade = EMBER_CAPACITY
+    return cell
 
 def generate(logic, i, j):
     spread = get_spread()
     for I in range(-spread+1, spread):
         for J in range(-spread+1, spread):
-            cell = Cell(logic)
-            if logic in FLUIDS:
-                cell.velocity =pick_one(1,-1)
-            if logic in FLAMMABLES:
-                cell.grade = HEAT_RESISTANCE[logic]
-            if logic in ORGANIC_MATERIAL:
-                cell.grade = HEAT_RESISTANCE[WOOD]
-
-            if logic == ACID:
-                cell.grade = ACID_CAPACITY
-            elif logic == EMBER:
-                cell.grade = EMBER_CAPACITY
+            cell = init_cell(logic)
 
             if logic == ROCK and (I+J+2*spread)%2 == 1:
                 continue
@@ -444,7 +446,10 @@ def evolve(PAUSED):
                 spawn = None
                 for pos in neighbours:
                     if get_cell(pos).logic != BLANK and get_cell(pos).logic != CLONER:
-                        spawn = Cell(get_cell(pos).logic)
+                        logic = get_cell(pos).logic
+                        if logic in LIGHTNING:
+                            logic = GROWER_LIGHTNING
+                        spawn = init_cell(logic)
                 if spawn:
                     for pos in neighbours:
                         if blank(pos) and operable(pos):
