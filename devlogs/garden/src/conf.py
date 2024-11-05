@@ -25,8 +25,6 @@ LIGHTNING = {GROWER_LIGHTNING,BODY_LIGHTNING}
 
 CLONER = 19
 
-HYDROGEN = 20
-
 
 names = {
     BLANK: "BLANK",
@@ -47,8 +45,7 @@ names = {
     DEAD_GRASS: "DEAD GRASS",
     GROWER_LIGHTNING: "GROWER LIGHTNING",
     BODY_LIGHTNING: "BODY LIGHTNING",
-    CLONER: "CLONER",
-    HYDROGEN: "HYDROGEN"
+    CLONER: "CLONER"
 }
 
 window = 0.5 # quick scaling
@@ -100,20 +97,12 @@ def set_unconserved(list_cells):
 set_unconserved(LIGHTNING)
 
 
-FLUIDS = [WATER,OIL,ACID,LAVA,HYDROGEN]
+FLUIDS = [WATER,OIL,ACID,LAVA]
 viscosity = {
     WATER: 1,
     OIL: 1,
     ACID: 1,
-    LAVA: 0.1,
-    HYDROGEN: -1
-}
-density = {
-    WATER: 1,
-    OIL: 0.5,
-    LAVA: 2,
-    HYDROGEN: 0,
-    ACID: 1,
+    LAVA: 0.1
 }
 SPLASH_ODDS = {
     WATER: 0.2,
@@ -123,14 +112,13 @@ SPLASH_ODDS = {
 }
 
 ORGANIC_MATERIAL = [SEED,GROWER_GRASS,BODY_GRASS,DEAD_GRASS] # treated equivalent to wood 
-FLAMMABLES = [OIL,WOOD,ICE,ROCK,HYDROGEN]
+FLAMMABLES = [OIL,WOOD,ICE,ROCK]
 
 HEAT_RESISTANCE = {
     WOOD: 5,
     OIL: 0,
     ICE: 10,
-    ROCK: 20,
-    HYDROGEN: 0
+    ROCK: 20
 }
 
 LIGHTNING_LIFETIME = 16
@@ -150,7 +138,6 @@ colors = {
     ICE: [(219, 241, 253),(200, 220, 230),(210, 230, 240),(100,230,230)],
     LAVA: [(250,0,0)],
     CLONER: [(200,200,200)],
-    HYDROGEN: [(200,255,200)],
 
     # lightning
     GROWER_LIGHTNING : [(255,255,255)],
@@ -186,6 +173,5 @@ CONTROLS = {
     "m": SEED,
     "l": LAVA,
     'e': GROWER_LIGHTNING,
-    'd': CLONER,
-    'h': HYDROGEN
+    'd': CLONER
 }

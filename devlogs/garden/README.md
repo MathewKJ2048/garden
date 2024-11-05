@@ -12,12 +12,10 @@ Try it online [here!](https://mathewkj2048.github.io/garden/)
 `F` - fire  
 `A` - acid  
 `O` - oil  
-`E` - lightning  
+`E` - embers  
 `L` - lava  
 `M` - seeds  
 `Q` - wood
-`H` - hydrogen
-`D` - cloner
 
 `V` - inert material  
 `C` - nothing  

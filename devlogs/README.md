@@ -12,12 +12,10 @@ Try it online [here!](https://mathewkj2048.github.io/garden/)
 `F` - fire  
 `A` - acid  
 `O` - oil  
-`E` - lightning  
+`E` - embers  
 `L` - lava  
 `M` - seeds  
 `Q` - wood
-`H` - hydrogen
-`D` - cloner
 
 `V` - inert material  
 `C` - nothing  
@@ -52,7 +50,5 @@ Try it online [here!](https://mathewkj2048.github.io/garden/)
 ## To Run:
 
 ```
-git clone https://github.com/MathewKJ2048/garden
-cd ./garden
 python ./src/main.py
 ```

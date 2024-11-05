@@ -182,24 +182,12 @@ def evolve(PAUSED):
                         WOOD: Cell(EMBER,grade=GENERATED_EMBER_CAPACITY),
                         ICE: Cell(WATER,velocity=pick_one(1,-1)),
                         OIL: FIRE_CORE_CELL,
-                        ROCK: Cell(LAVA),
-                        HYDROGEN: FIRE_CORE_CELL
+                        ROCK: Cell(LAVA)
                     }
                     if fuel.grade <=0:
                         place(pos,replacements[log])
                     else:
                         fuel.grade = fuel.grade-1
-
-            if cell.logic == HYDROGEN and operable(t):
-                cell.velocity = pick_one(1,-1)
-                blank_positions = []
-                for p in neighbours_close:
-                    if blank(p):
-                        blank_positions.append(p)
-                if len(blank_positions) != 0:
-                    p = random.choice(blank_positions)
-                    move(t,p)
-
 
 
             if cell.logic == SAND and operable(t):
@@ -237,22 +225,17 @@ def evolve(PAUSED):
                         if len(positions) != 0:
                             place(random.choice(positions),FIRE_CORE_CELL)
                 
-            if cell.logic in FLUIDS and operable(t):  #immiscible fluids
+            if cell.logic == OIL and operable(t):
                 swappable_postions = [up,up_left,up_right]
-                def is_less_dense(pos):
-                    logic = get_cell(pos).logic
-                    if logic in FLUIDS:
-                        if density[logic] > density[cell.logic]:
-                            return True
                 sp = []
                 for pos in swappable_postions:
-                    if operable(pos) and is_less_dense(pos):
+                    if operable(pos) and get_cell(pos).logic == WATER:
                         sp.append(pos)
                 if len(sp)!=0:
                     swap(t,random.choice(sp))
                 else:
-                    sl = operable(left) and is_less_dense(left)
-                    sr = operable(right) and is_less_dense(right)
+                    sl = operable(left) and get_cell(left).logic == WATER
+                    sr = operable(right) and get_cell(right).logic == WATER
                     if cell.velocity == 1 and sl:
                         swap(t,left)
                     elif cell.velocity == -1 and sr:
@@ -295,8 +278,7 @@ def evolve(PAUSED):
                         if event(FREEZE_ODDS):
                             place(t,Cell(ICE))
 
-            if cell.logic in FLUIDS and operable(t) and viscosity[cell.logic]>=0:
-
+            if cell.logic in FLUIDS and operable(t):
                 # check if splashing happens
                 splash_positons = []
                 side_flow_postions = []
